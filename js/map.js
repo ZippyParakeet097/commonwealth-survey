@@ -227,7 +227,9 @@ export function createMap({ D, places, byId, nw }) {
   // zoom, and Enter, Space or E acts at the crosshair exactly as a click would there.
   svg.tabIndex = 0;
   const centre = () => ({ x: vb.x + vb.w / 2, y: vb.y + vb.h / 2 });
+  svg.addEventListener('pointerdown', () => svg.classList.add('ptr'));
   svg.addEventListener('keydown', e => {
+    svg.classList.remove('ptr');
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const k = e.key.length === 1 ? e.key.toLowerCase() : e.key, big = e.shiftKey ? 3 : 1;
     const step = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1], ...(keysOn() ? { a: [-1, 0], d: [1, 0], w: [0, -1], s: [0, 1] } : {}) }[k];
@@ -245,7 +247,7 @@ export function createMap({ D, places, byId, nw }) {
   }
   // arriving on the map shows where the crosshair is; it is spoken only once the reader moves it
   svg.addEventListener('focus', () => { if (svg.matches(':focus-visible')) kbdMoved(true); });
-  svg.addEventListener('blur', () => { $('tip').hidden = true; if (hooks.leave) hooks.leave(); });
+  svg.addEventListener('blur', () => { svg.classList.remove('ptr'); $('tip').hidden = true; if (hooks.leave) hooks.leave(); });
   function nearestAt(x, y, px) {
     const u = vb.w / (svg.clientWidth || 800); let best = null, bd = px * u;
     const pool = [...(on('loc') ? locs.filter(l => (!l.bos || on('bos')) && !l.hid) : on('mm') ? mmList : []), ...(on('unm') ? unm : [])];

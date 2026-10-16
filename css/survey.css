@@ -138,11 +138,14 @@ input:checked::before { transform: scale(1); }
   position: sticky; top: calc(var(--top-h) + 8px); }
 @media (max-width: 960px) { .mapwrap { position: relative; top: 0; height: min(72vh, 640px); } }
 #map { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
-#map:focus-visible { outline: 2px solid var(--c); outline-offset: -4px; }
+/* the ring and crosshair are for keyboard use: a pointer press hides them (.ptr) until the next key */
+#map { -webkit-tap-highlight-color: transparent; }
+#map:focus { outline: none; }
+#map:focus-visible:not(.ptr) { outline: 2px solid var(--c); outline-offset: -4px; }
 #map.dragging { cursor: grabbing; }
 #map.measuring { cursor: crosshair; }
 #xhair { display: none; }
-#map:focus-visible #xhair { display: inline; }
+#map:focus-visible:not(.ptr) #xhair { display: inline; }
 svg text { font-family: var(--f-ui); paint-order: stroke; stroke: var(--halo); stroke-linejoin: round; stroke-width: calc(var(--u) * 3.2px); }
 .t-town { fill: var(--text2); font-size: calc(var(--u) * 10.5px); letter-spacing: .08em; text-transform: uppercase; }
 .t-town.big { font-size: calc(var(--u) * 12px); font-weight: 700; }

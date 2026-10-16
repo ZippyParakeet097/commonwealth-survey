@@ -1,21 +1,24 @@
 <!doctype html>
-<html lang="en" data-tint="green" data-fx="on" data-keys="on">
+<html lang="en" data-theme="pip" data-tint="green" data-fx="on" data-keys="on">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Commonwealth Survey</title>
 <meta name="description" content="The Fallout 4 map warped onto real eastern Massachusetts, so you can measure the Commonwealth in true miles.">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#010904">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Stardos+Stencil:wght@400;700&family=Permanent+Marker&display=swap">
 <link rel="stylesheet" href="css/survey.css">
 <script>
-  // apply saved Pip-Boy settings before first paint, so the screen never flashes the wrong colour
-  try { const g = k => JSON.parse(localStorage.getItem('survey.' + k)), r = document.documentElement, t = g('tint');
-    if (['green', 'amber', 'blue', 'white'].includes(t)) r.dataset.tint = t; if (g('fx') === false) r.dataset.fx = 'off'; if (g('keys') === false) r.dataset.keys = 'off'; } catch { /* storage unavailable */ }
+  // apply saved settings before first paint, so the page never flashes the wrong look or colour;
+  // with no saved look, the field kit is for light mode and the Pip-Boy for dark
+  { const r = document.documentElement; let th = null;
+    try { const g = k => JSON.parse(localStorage.getItem('survey.' + k)), t = g('tint'); th = g('theme');
+      if (['green', 'amber', 'blue', 'white'].includes(t)) r.dataset.tint = t; if (g('fx') === false) r.dataset.fx = 'off'; if (g('keys') === false) r.dataset.keys = 'off'; } catch { /* storage unavailable */ }
+    r.dataset.theme = ['pip', 'field'].includes(th) ? th : matchMedia('(prefers-color-scheme: light)').matches ? 'field' : 'pip'; }
 </script>
 </head>
 <body>
@@ -25,7 +28,7 @@
   <symbol id="prydwen" viewBox="40 130 480 285"><use href="#pry-shape" fill="var(--land)" stroke="var(--land)" stroke-width="22" stroke-linejoin="round"/><use href="#pry-shape" fill="var(--bos)"/></symbol>
   <symbol id="prydwen-flat" viewBox="60 150 440 245"><use href="#pry-shape" fill="currentColor"/></symbol>
   <path id="mm-star" d="M0-21 L4.9-6.7 L20-6.5 L8 2.5 L12.3 17 L0 8.3 L-12.3 17 L-8 2.5 L-20-6.5 L-4.9-6.7Z"/>
-  <symbol id="mm-flag" viewBox="0 0 556 359"><rect width="556" height="359" fill="var(--bg)"/><g fill="var(--c)"><path d="M232 222 L392 86" stroke="var(--c)" stroke-width="9" stroke-linecap="square"/><path d="M160 312 L234 222" stroke="var(--c)" stroke-width="20"/><path d="M148 300 L172 326 L180 310 Z"/><circle cx="222" cy="240" r="9"/><path d="M155 74 L280 190 L280 150 L405 316 L280 245 Z" stroke="var(--bg)" stroke-width="16" paint-order="stroke"/><use href="#mm-star" x="280" y="76"/><use href="#mm-star" x="155" y="182"/><use href="#mm-star" x="395" y="182"/></g></symbol>
+  <symbol id="mm-flag" viewBox="0 0 556 359"><rect width="556" height="359" fill="var(--mm-bg)"/><g fill="var(--mm-fg)"><path d="M232 222 L392 86" stroke="var(--mm-fg)" stroke-width="9" stroke-linecap="square"/><path d="M160 312 L234 222" stroke="var(--mm-fg)" stroke-width="20"/><path d="M148 300 L172 326 L180 310 Z"/><circle cx="222" cy="240" r="9"/><path d="M155 74 L280 190 L280 150 L405 316 L280 245 Z" stroke="var(--mm-bg)" stroke-width="16" paint-order="stroke"/><use href="#mm-star" x="280" y="76"/><use href="#mm-star" x="155" y="182"/><use href="#mm-star" x="395" y="182"/></g></symbol>
   <!-- the Brotherhood of Steel emblem, simplified to read at 16-20 px: wings, ring, gears and sword -->
   <g id="bos-shape"><path fill-rule="evenodd" d="M22 16L9 40L17 46L9 56L18 61L13 70L22 72L25 81L33 80L50 88L67 80L75 81L78 72L87 70L82 61L91 56L83 46L91 40L78 16A34.5 34.5 0 1 1 22 16Z"/><path fill-rule="evenodd" d="M19 35a31 31 0 1 0 62 0a31 31 0 1 0 -62 0ZM23 35a27 27 0 1 0 54 0a27 27 0 1 0 -54 0Z"/><path fill-rule="evenodd" d="M62 19.2L64.6 15.23L67.13 15.9L67.4 20.65L68.94 21.73L73.49 20.36L74.99 22.5L72.15 26.31L72.64 28.12L77 30L76.77 32.6L72.15 33.69L71.35 35.4L73.49 39.64L71.64 41.49L67.4 39.35L65.69 40.15L64.6 44.77L62 45L60.12 40.64L58.31 40.15L54.5 42.99L52.36 41.49L53.73 36.94L52.65 35.4L47.9 35.13L47.23 32.6L51.2 30L51.36 28.12L47.9 24.87L49.01 22.5L53.73 23.06L55.06 21.73L54.5 17.01L56.87 15.9L60.12 19.36ZM55.5 30a6.5 6.5 0 1 0 13 0a6.5 6.5 0 1 0 -13 0ZM32 27.6L33.56 25.15L35.06 25.61L35 28.51L35.82 29.18L38.65 28.56L39.39 29.94L37.3 31.95L37.4 33L39.85 34.56L39.39 36.06L36.49 36L35.82 36.82L36.44 39.65L35.06 40.39L33.05 38.3L32 38.4L30.44 40.85L28.94 40.39L29 37.49L28.18 36.82L25.35 37.44L24.61 36.06L26.7 34.05L26.6 33L24.15 31.44L24.61 29.94L27.51 30L28.18 29.18L27.56 26.35L28.94 25.61L30.95 27.7ZM28.8 33a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0ZM40 45.4L41.37 43.13L42.68 43.53L42.56 46.18L43.25 46.75L45.82 46.11L46.47 47.32L44.51 49.1L44.6 50L46.87 51.37L46.47 52.68L43.82 52.56L43.25 53.25L43.89 55.82L42.68 56.47L40.9 54.51L40 54.6L38.63 56.87L37.32 56.47L37.44 53.82L36.75 53.25L34.18 53.89L33.53 52.68L35.49 50.9L35.4 50L33.13 48.63L33.53 47.32L36.18 47.44L36.75 46.75L36.11 44.18L37.32 43.53L39.1 45.49ZM37.2 50a2.8 2.8 0 1 0 5.6 0a2.8 2.8 0 1 0 -5.6 0Z"/><path d="M50 1L53 7V73H59V78.5H52V90.5A3.6 3.6 0 1 1 48 90.5V78.5H41V73H47V7Z" fill="none" stroke="var(--bg)" stroke-width="4.5" stroke-linejoin="round"/><path d="M50 1L53 7V73H59V78.5H52V90.5A3.6 3.6 0 1 1 48 90.5V78.5H41V73H47V7Z"/></g>
   <symbol id="bos-mark" viewBox="0 0 100 100"><circle cx="50" cy="47" r="48" fill="var(--bg)"/><use href="#bos-shape" fill="var(--c)" transform="translate(6 4.5) scale(.88)"/></symbol>
@@ -37,6 +40,7 @@
 <div class="screen">
   <header class="pip-top">
     <div class="brand">
+      <p class="stamp" aria-hidden="true">Army Map Service<br>Corps of Engineers</p>
       <h1>Commonwealth Survey</h1>
       <p class="kicker">Fallout 4 on real ground · unofficial fan atlas</p>
     </div>
@@ -289,6 +293,12 @@
   <form method="dialog" class="dlg">
     <div class="dlg-h"><h2 id="dlg-settings-h">Settings</h2><button class="btn" value="close">Close</button></div>
     <fieldset>
+      <legend>Look</legend>
+      <label class="tint-opt"><input type="radio" name="theme" value="auto">Match my system: field kit by day, Pip-Boy by night</label>
+      <label class="tint-opt"><input type="radio" name="theme" value="pip">Pip-Boy</label>
+      <label class="tint-opt"><input type="radio" name="theme" value="field">Field survey kit</label>
+    </fieldset>
+    <fieldset>
       <legend>Pip-Boy colour</legend>
       <label class="tint-opt"><input type="radio" name="tint" value="green"><i style="background:#1aff80"></i>Green, the Fallout 4 default</label>
       <label class="tint-opt"><input type="radio" name="tint" value="amber"><i style="background:#ffb642"></i>Amber, as in New Vegas</label>
@@ -296,8 +306,8 @@
       <label class="tint-opt"><input type="radio" name="tint" value="white"><i style="background:#e4ece6"></i>White</label>
     </fieldset>
     <fieldset>
-      <legend>Screen</legend>
-      <label class="check"><input type="checkbox" id="set-fx">Scanlines and glow</label>
+      <legend>Texture</legend>
+      <label class="check"><input type="checkbox" id="set-fx">Scanlines and glow, or paper grain</label>
       <p class="small">Turn these off for the crispest text. They also switch off when your system asks for more contrast.</p>
     </fieldset>
     <fieldset>

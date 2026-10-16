@@ -1,11 +1,11 @@
 import { $, prefs } from './util.js';
 
 // The Pip-Boy shell: the five tabs and their sub-tabs, the key-hint bar, the settings and keys
-// windows, and the keyboard layer. Tabs follow the WAI-ARIA tabs pattern (arrow keys move along a
-// row; moving selects). Single-key shortcuts follow the game where it has one (M for the map, J for
-// data, E to select, WASD to move) and can be switched off, as WCAG 2.1.4 asks; they never fire
-// while you type in a field.
-const TINTS = ['green', 'amber', 'blue', 'white'];
+// windows (where the look, Pip-Boy or field survey kit, is chosen), and the keyboard layer. Tabs
+// follow the WAI-ARIA tabs pattern (arrow keys move along a row; moving selects). Single-key
+// shortcuts follow the game where it has one (M for the map, J for data, E to select, WASD to move)
+// and can be switched off, as WCAG 2.1.4 asks; they never fire while you type in a field.
+const TINTS = ['green', 'amber', 'blue', 'white'], THEMES = ['auto', 'pip', 'field'];
 const TYPING = 'input:not([type="checkbox"]):not([type="radio"]), select, textarea, [contenteditable]';
 const root = document.documentElement;
 export const keysOn = () => root.dataset.keys !== 'off';
@@ -33,7 +33,7 @@ function tabRow(list, onChange) {
 }
 
 export function createPipBoy() {
-  const listeners = [];
+  const listeners = [], themeListeners = [];
   const subRows = new Map();  // main panel id → its sub-tab row
   const main = tabRow($('tabs'), (t, changed) => {
     if (changed) window.scrollTo(0, 0);
@@ -76,12 +76,25 @@ export function createPipBoy() {
   $('open-keys').onclick = $('open-keys2').onclick = openKeys;
   $('open-settings').onclick = () => {
     document.querySelectorAll('input[name="tint"]').forEach(r => { r.checked = r.value === root.dataset.tint; });
+    document.querySelectorAll('input[name="theme"]').forEach(r => { r.checked = r.value === theme(); });
     $('set-fx').checked = root.dataset.fx !== 'off'; $('set-keys').checked = keysOn();
     openSettings();
   };
   const themeColor = () => { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = getComputedStyle(document.body).backgroundColor; };
   document.querySelectorAll('input[name="tint"]').forEach(r => r.addEventListener('change', () => {
     if (!TINTS.includes(r.value)) return; root.dataset.tint = r.value; prefs.set('tint', r.value); themeColor(); }));
+  // the look: Pip-Boy, field survey kit, or whichever suits the system's light or dark mode
+  const light = matchMedia('(prefers-color-scheme: light)');
+  let chosen = prefs.get('theme', 'auto'); if (!THEMES.includes(chosen)) chosen = 'auto';
+  const theme = () => chosen;
+  function applyTheme() {
+    const t = theme(), next = t === 'auto' ? (light.matches ? 'field' : 'pip') : t;
+    if (root.dataset.theme === next) return;
+    root.dataset.theme = next; themeColor(); themeListeners.forEach(f => f(next));
+  }
+  document.querySelectorAll('input[name="theme"]').forEach(r => r.addEventListener('change', () => {
+    if (THEMES.includes(r.value)) { chosen = r.value; prefs.set('theme', chosen); applyTheme(); } }));
+  light.addEventListener('change', applyTheme);
   $('set-fx').onchange = e => { root.dataset.fx = e.target.checked ? 'on' : 'off'; prefs.set('fx', e.target.checked); };
   $('set-keys').onchange = e => { root.dataset.keys = e.target.checked ? 'on' : 'off'; prefs.set('keys', e.target.checked); hints(); };
   themeColor();
@@ -103,5 +116,5 @@ export function createPipBoy() {
   });
 
   hints();
-  return { show, get tab() { return main.cur.id.replace('tab-', ''); }, onTab: f => listeners.push(f), hints };
+  return { show, get tab() { return main.cur.id.replace('tab-', ''); }, onTab: f => listeners.push(f), onTheme: f => themeListeners.push(f), hints };
 }

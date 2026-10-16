@@ -30,8 +30,11 @@ export function createCard({ map, grid, byId, D }) {
     if (p.bos) c = '<span class="chip bos"><svg class="bosi" viewBox="0 0 100 100" aria-hidden="true"><use href="#bos-flat"/></svg>Brotherhood of Steel</span>' + c;
     return c;
   }
+  // the field kit stamps the card; the chips already say the same in words
+  const stampFor = p => p.bos ? 'Brotherhood' : p.mm ? 'Minutemen' : p.gs || CRATER[p.n] ? 'Hot zone' : '';
   function showPlace(p) {
-    $('info').innerHTML = `<h2>Selected</h2><p class="place-name">${esc(p.n)}</p><div class="chips">${chipsFor(p)}</div>${p.note ? `<p class="lore">${esc(p.note)}</p>` : ''}
+    const stamp = stampFor(p);
+    $('info').innerHTML = `<h2>Selected</h2>${stamp ? `<span class="rubber" aria-hidden="true">${stamp}</span>` : ''}<p class="place-name">${esc(p.n)}</p><div class="chips">${chipsFor(p)}</div>${p.note ? `<p class="lore">${esc(p.note)}</p>` : ''}
      <dl class="kv">${p.real ? `<dt>Real site</dt><dd class="txt">${esc(p.real)}</dd>` : ''}${p.town ? `<dt>Real town</dt><dd class="txt">${esc(p.town)}</dd>` : ''}${p.t && p.t !== p.n && p.t !== 'Unmarked' ? `<dt>Game type</dt><dd class="txt">${esc(p.t)}</dd>` : ''}
      <dt>Lat, lon</dt><dd>${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</dd>${gridRow(p)}${p.kind === 'off' ? `<dt>${esc(tc.n)}</dt><dd>${fmtDist(km(tc, p))} ${compass(tc, p)}</dd>` : ''}${hubs(p)}</dl>
      ${p.snap ? '<p class="small">The warp put this site in the sea. It was moved to the nearest shore.</p>' : ''}${p.sources?.length ? `<p class="small">Sources: ${p.sources.map(([t, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`).join('; ')}.</p>` : ''}${links(p.lat, p.lon)}`;

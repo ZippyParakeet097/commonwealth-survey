@@ -15,6 +15,7 @@ The game squeezes Boston and its suburbs into a few square miles. This tool puts
 - **Nuka-World, theorized.** The park is off the game map, so it gets its own figure: southern New England with the survey sheet, the game map and the fan-favoured site, Six Flags New England in Agawam, about 66 miles west-southwest of the transit center. The fastest real drive there, 82 miles by the Mass Pike, is drawn on it. The figure and the place card give the reasoning and sources.
 - **Places on real ground:** site plans of Diamond City, the Castle, Fort Strong and Hangman's Alley, drawn from OpenStreetMap at true scale.
 - **A Pip-Boy screen.** The survey is laid out like the Pip-Boy 3000 Mark IV: SURVEY, SITES, DATA, MAP and SEA tabs in the game's own slot order, quests and workshops under DATA, and a key-hint bar along the bottom. Pick the Pip-Boy colour under Settings: green (the Fallout 4 default), amber (New Vegas), blue or white.
+- **Or a field survey kit.** A second look: an Army Map Service sheet on khaki paper, with stencilled headings, a typewritten index card for each place and your own routes, pins and selections in red grease pencil. Choose it under Settings; by default the page uses it in light mode and the Pip-Boy in dark mode.
 - Miles or kilometres, and links that open on a place: `…/#place=Diamond%20City`.
 
 ## Keyboard and accessibility
@@ -32,7 +33,7 @@ Everything works from the keyboard, and the keys follow the game where it has on
 
 The letter and number shortcuts can be turned off under Settings (WCAG 2.1.4), and never fire while you type in a field. Tab, the arrow keys, Enter and Esc always work.
 
-The page aims at WCAG 2.2 AA. Every shade is a mix of the chosen Pip-Boy colour with black, and `npm run check` verifies that each text and control colour pair meets AA contrast for every tint. With one colour on screen, map layers are told apart by line style and texture rather than hue: wetlands by marsh tufts, the Glowing Sea by a hatched band inside its edge, Brotherhood of Steel places by the Brotherhood's emblem and its ground (Logan Airport) by cross-hatching inside a double border, the game map's edge by a dash-dot line. Selections and changes are announced to screen readers. Scanlines and glow can be switched off, and switch off by themselves when your system asks for more contrast.
+The page aims at WCAG 2.2 AA. Every Pip-Boy shade is a mix of the chosen colour with black, and `npm run check` verifies that each text and control colour pair meets AA contrast for every tint and for the field kit. With one colour on screen, map layers are told apart by line style and texture rather than hue: wetlands by marsh tufts, the Glowing Sea by a hatched band inside its edge, Brotherhood of Steel places by the Brotherhood's emblem and its ground (Logan Airport) by cross-hatching inside a double border, the game map's edge by a dash-dot line. Selections and changes are announced to screen readers. Scanlines and glow, or the field kit's paper grain, can be switched off; the scanlines also switch off by themselves when your system asks for more contrast.
 
 ## Run it
 

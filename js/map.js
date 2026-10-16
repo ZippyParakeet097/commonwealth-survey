@@ -24,7 +24,9 @@ export function createMap({ D, places, byId, nw }) {
   // ---- layers, bottom to top ----
   // one colour: sea and lakes are the dark screen, land a dim fill, and a bright line marks every shore
   const shore = w => `stroke="var(--coast)" stroke-width="${w}" stroke-linejoin="round" ${NSS}`;
-  let html = patterns('m', 1) + `<defs><clipPath id="gs-clip"><path d="${G.zone}"/></clipPath></defs>`;
+  // the field kit's grease pencil wobbles through this filter; render() keeps it a few pixels wide at every zoom
+  let html = patterns('m', 1) + `<defs><clipPath id="gs-clip"><path d="${G.zone}"/></clipPath>`
+    + `<filter id="pencil" filterUnits="userSpaceOnUse"><feTurbulence type="fractalNoise" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" xChannelSelector="R" yChannelSelector="G"/></filter></defs>`;
   html += `<rect x="0" y="0" width="${B.w}" height="${B.h}" fill="var(--sea)"/>`;
   html += P(B.land, 'var(--land)', shore(.9));
   html += `<g id="g-wet">${P(B.wet, 'url(#m-tuft)')}</g>`;
@@ -83,14 +85,16 @@ export function createMap({ D, places, byId, nw }) {
   const gsT = ['The Glowing Sea', 'theorized, beyond the map edge', 'fallout drift, NE wind', 'outer limit, if the hills had not held it']
     .map((s, i) => { const t = mk('text', { class: ['t-gs', 't-gs sub', 't-gs r', 't-gs sub'][i], 'text-anchor': 'middle' }, $('gs-labels')); t.textContent = s; return t; });
   const tc = byId.get('Nuka-World transit center');
-  // the selected place gets the Pip-Boy's corner brackets, on a dark halo so they read over hatching
-  const selHalo = mk('path', { fill: 'none', stroke: 'var(--halo)', 'stroke-width': 5, 'vector-effect': 'non-scaling-stroke' }, $('g-sel'));
-  const sel = mk('path', { fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }, $('g-sel'));
+  // the selected place gets the Pip-Boy's corner brackets, on a dark halo so they read over hatching,
+  // or on the field kit a grease-pencil ring
+  const selHalo = mk('path', { class: 'pip-only', fill: 'none', stroke: 'var(--halo)', 'stroke-width': 5, 'vector-effect': 'non-scaling-stroke' }, $('g-sel'));
+  const sel = mk('path', { class: 'pip-only', fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }, $('g-sel'));
+  const ring = mk('path', { class: 'pen-only', fill: 'none', stroke: 'var(--pin)', 'stroke-width': 2.6, 'stroke-linecap': 'round', 'vector-effect': 'non-scaling-stroke' }, $('g-sel'));
   // the keyboard crosshair at the middle of the view; CSS shows it only while the map has keyboard focus
   const xhair = mk('g', { id: 'xhair' }, $('g-sel'));
   const xHalo = mk('path', { fill: 'none', stroke: 'var(--halo)', 'stroke-width': 5, 'vector-effect': 'non-scaling-stroke' }, xhair);
   const xLine = mk('path', { fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }, xhair);
-  const pinMark = mk('path', { fill: 'var(--ink)', stroke: 'var(--land)', 'stroke-width': 1.5, 'vector-effect': 'non-scaling-stroke' }, $('g-sel'));
+  const pinMark = mk('path', { fill: 'var(--pin)', stroke: 'var(--land)', 'stroke-width': 1.5, 'vector-effect': 'non-scaling-stroke' }, $('g-sel'));
 
   // places sharing one spot (the Institute under CIT, Vault 114 under Park Street...): one dot, labels stacked
   const stacks = (() => { const m = new Map(); locs.forEach(l => { if (IN_DC.has(l.n) || l.icon) return; const k = Math.round(l.x * 40) + ',' + Math.round(l.y * 40); if (!m.has(k)) m.set(k, []); m.get(k).push(l); });
@@ -112,8 +116,9 @@ export function createMap({ D, places, byId, nw }) {
     gs: () => fit(G.box[0] - 3, G.box[1] - 2, G.box[2] + 3, G.box[3] + 2),
   };
 
-  // label widths are measured once; measure again when the web fonts arrive
-  if (document.fonts) document.fonts.ready.then(() => { places.forEach(l => { l.lab._w = undefined; }); render(); });
+  // label widths are measured once; measure again when web fonts arrive or the look changes its fonts
+  const relabel = () => { places.forEach(l => { l.lab._w = undefined; }); render(); };
+  if (document.fonts) { document.fonts.ready.then(relabel); document.fonts.addEventListener('loadingdone', relabel); }
 
   function render() {
     svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
@@ -173,6 +178,13 @@ export function createMap({ D, places, byId, nw }) {
     if (api.sel && api.sel.kind !== 'off') { const { x, y } = api.sel, a = u * 13, b = u * 5;
       sd = `M${x - a} ${y - a + b}V${y - a}H${x - a + b}M${x + a - b} ${y - a}H${x + a}V${y - a + b}M${x + a} ${y + a - b}V${y + a}H${x + a - b}M${x - a + b} ${y + a}H${x - a}V${y + a - b}`; }
     sel.setAttribute('d', sd); selHalo.setAttribute('d', sd);
+    let rd = '';  // a loose hand-drawn loop: a tilted ellipse that overshoots its start
+    if (api.sel && api.sel.kind !== 'off') { const { x, y } = api.sel, a = u * 16, t0 = 2.2, c = Math.cos(-.25), s = Math.sin(-.25);
+      for (let i = 0; i <= 34; i++) { const t = t0 + i / 34 * Math.PI * 2.2, k = 1 + i / 34 * .14, ex = Math.cos(t) * a * 1.25 * k, ey = Math.sin(t) * a * .9 * k;
+        rd += `${i ? 'L' : 'M'}${(x + ex * c - ey * s).toFixed(4)} ${(y + ex * s + ey * c).toFixed(4)}`; } }
+    ring.setAttribute('d', rd);
+    { const f = $('pencil'); f.setAttribute('x', vb.x - vb.w * .1); f.setAttribute('y', vb.y - vb.h * .1); f.setAttribute('width', vb.w * 1.2); f.setAttribute('height', vb.h * 1.2);
+      f.firstChild.setAttribute('baseFrequency', .05 / u); f.lastChild.setAttribute('scale', u * 3); }
     { const cx = vb.x + vb.w / 2, cy = vb.y + vb.h / 2, i = u * 5, o = u * 16;
       const xd = `M${cx - o} ${cy}H${cx - i}M${cx + i} ${cy}H${cx + o}M${cx} ${cy - o}V${cy - i}M${cx} ${cy + i}V${cy + o}`;
       xLine.setAttribute('d', xd + `M${cx - u} ${cy}h${u * 2}`); xHalo.setAttribute('d', xd); }
@@ -278,7 +290,7 @@ export function createMap({ D, places, byId, nw }) {
   const api = {
     svg, wrap, locs, unm, mmList, hooks, sel: null, gameBox, VIEWS,
     get vb() { return vb; }, get u() { return vb.w / (svg.clientWidth || 800); }, centre,
-    fit, fitBox, render, zoomAt,
+    fit, fitBox, render, relabel, zoomAt,
     setPin(p) { pin = p; render(); },
     // Nuka-World is off the sheet (its figure below shows where), so the map goes to its transit center instead
     focus(p) { if (p === nw) p = tc; fit(p.x - 7, p.y - 5, p.x + 7, p.y + 5); },

@@ -54,6 +54,7 @@ async function main() {
   };
   map.hooks.leave = () => { $('cursor').hidden = true; measure.leave(); };
   grid.onChange(() => card.refresh());
+  pip.onTheme(() => map.relabel());
 
   // find a place
   const dl = $('places');

@@ -1,4 +1,5 @@
-/* The Pip-Boy 3000 Mark IV: one phosphor colour on a dark screen. Tabs across the top (in the game's
+/* Two looks share one set of tokens: the Pip-Boy (below) and the field survey kit (at the end).
+   The Pip-Boy 3000 Mark IV: one phosphor colour on a dark screen. Tabs across the top (in the game's
    own slot order, so MAP is the fourth), a key-hint bar along the bottom, and every shade derived from
    the one colour the reader picks. Shades are mixes of that colour with black, so contrast is the same
    for every tint; scripts/check-contrast.mjs checks each text and control pair against WCAG 2.2 AA. */
@@ -25,10 +26,11 @@
   --grass: color-mix(in srgb, var(--c) 17%, #000); --dirt: color-mix(in srgb, var(--c) 34%, #000); --stand: color-mix(in srgb, var(--c) 21%, #000);
   --monster: var(--c); --bldg: color-mix(in srgb, var(--c) 15%, #000); --street: color-mix(in srgb, var(--c) 25%, #000);
   --grid: color-mix(in srgb, var(--c) 26%, transparent); --grid-major: color-mix(in srgb, var(--c) 44%, transparent);
-  --meas: var(--c); --nw: var(--c); --halo: var(--bg);
+  --meas: var(--c); --nw: var(--c); --halo: var(--bg); --pin: var(--ink);
 
   --f-ui: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   --f-mono: "Share Tech Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --f-map: var(--f-ui); --f-pen: var(--f-mono);
   --top-h: 116px; --bot-h: 52px;
   color-scheme: dark;
 }
@@ -52,6 +54,7 @@ a:hover { text-decoration-thickness: 2px; }
 code { font-family: var(--f-mono); }
 ::selection { background: var(--c); color: var(--bg); }
 :focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+.stamp, .rubber, .pen-only { display: none; }
 .vh { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .skip { position: absolute; left: 16px; top: -100px; z-index: 100; background: var(--c); color: var(--bg); padding: 8px 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; text-decoration: none; }
 .skip:focus { top: 8px; }
@@ -146,7 +149,7 @@ input:checked::before { transform: scale(1); }
 #map.measuring { cursor: crosshair; }
 #xhair { display: none; }
 #map:focus-visible:not(.ptr) #xhair { display: inline; }
-svg text { font-family: var(--f-ui); paint-order: stroke; stroke: var(--halo); stroke-linejoin: round; stroke-width: calc(var(--u) * 3.2px); }
+svg text { font-family: var(--f-map); paint-order: stroke; stroke: var(--halo); stroke-linejoin: round; stroke-width: calc(var(--u) * 3.2px); }
 .t-town { fill: var(--text2); font-size: calc(var(--u) * 10.5px); letter-spacing: .08em; text-transform: uppercase; }
 .t-town.big { font-size: calc(var(--u) * 12px); font-weight: 700; }
 .t-river { fill: var(--text2); font-style: italic; font-size: calc(var(--u) * 11.5px); }
@@ -154,7 +157,7 @@ svg text { font-family: var(--f-ui); paint-order: stroke; stroke: var(--halo); s
 .t-minor { fill: var(--loc); font-size: calc(var(--u) * 11px); }
 .t-unm { fill: var(--unm); font-size: calc(var(--u) * 10.5px); font-style: italic; }
 .t-grid { fill: var(--text2); font-family: var(--f-mono) !important; font-size: calc(var(--u) * 11px); }
-.t-meas { fill: var(--meas); font-family: var(--f-mono) !important; font-size: calc(var(--u) * 12px); }
+.t-meas { fill: var(--meas); font-family: var(--f-pen) !important; font-size: calc(var(--u) * 12px); }
 .t-gs { fill: var(--gs); font-size: calc(var(--u) * 14px); font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
 .t-gs.sub { font-size: calc(var(--u) * 11px); font-weight: 400; letter-spacing: .04em; text-transform: none; font-style: italic; }
 .t-gs.r { font-family: var(--f-mono) !important; font-size: calc(var(--u) * 11.5px); letter-spacing: 0; text-transform: none; font-weight: 400; }
@@ -269,3 +272,137 @@ legend { padding: 0 6px; font-weight: 700; letter-spacing: .1em; text-transform:
 .dlg .small { color: var(--text2); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+/* ======== The field survey kit ========
+   An Army Map Service sheet carried around the Commonwealth: khaki paper, olive drab, slate water, a
+   typewritten index card per place, and red grease pencil for anything the reader adds (routes, pins,
+   the selection). Colours are fixed here rather than mixed from a tint; scripts/check-contrast.mjs
+   checks the pairs. Texture (grain, folds, tape, the tilted card) follows the same setting as the
+   Pip-Boy's scanlines. */
+html[data-theme="field"] {
+  --c: #23231c;  --bg: #ddd2b0; --bg2: #ebe3c8; --land: #e6dcbc; --hover: #cfc29a;
+  --faint: #b3a67e; --line: #6e6650; --text2: #4e4838; --body: #2e2c23; --glow: transparent;
+  --od: #3f4628; --pencil: #a3261b; --card: #f4efdf;
+  --paper: var(--bg); --sea: #9fb1ad; --water: #9fb1ad; --wet: #55654a;
+  --coast: #2f3a3a; --stream: #5f7c82; --rule: #a39874; --ink: #23231c; --muted: var(--text2);
+  --loc: #23231c; --unm: #4e4838; --bos: #23231c; --bos-fill: rgba(35,35,28,.12);
+  --fp: transparent; --fpline: #23231c; --panel: var(--bg2);
+  --gs: #a3261b; --gs-fill: rgba(163,38,27,.06); --gs-hatch: rgba(163,38,27,.55);
+  --site: rgba(63,70,40,.12);
+  --grass: #c9c89c; --dirt: #9a8158; --stand: #d8cca6;
+  --monster: #3f4628; --bldg: #d3c7a2; --street: #c4b68c;
+  --grid: rgba(35,35,28,.2); --grid-major: rgba(35,35,28,.38);
+  --meas: #a3261b; --nw: #3f4628; --halo: #e6dcbc; --pin: #a3261b;
+
+  --f-ui: "Courier Prime", "Courier New", ui-monospace, monospace;
+  --f-mono: "Special Elite", "American Typewriter", "Courier New", monospace;
+  --f-head: "Stardos Stencil", Impact, "Arial Narrow", sans-serif;
+  --f-map: "Special Elite", "American Typewriter", "Courier New", monospace;
+  --f-pen: "Permanent Marker", "Marker Felt", "Comic Sans MS", cursive;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .24 0 0 0 0 .1 0 0 0 .2 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  --folds: linear-gradient(90deg, transparent calc(50% - 1px), rgba(80,60,20,.13) 50%, transparent calc(50% + 1px)),
+           linear-gradient(180deg, transparent calc(50% - 1px), rgba(80,60,20,.1) 50%, transparent calc(50% + 1px));
+  color-scheme: light;
+}
+@media (prefers-contrast: more) {
+  html[data-theme="field"] { --text2: #2e2c23; --body: #23231c; --line: #4e4838; --faint: #6e6650; }
+}
+
+html[data-theme="field"] body { color: var(--c); font-size: .97rem; background: var(--bg); }
+html[data-theme="field"][data-fx="on"] :is(body, .pip-top, .pip-bot) { background: var(--grain) fixed, var(--folds) fixed, var(--bg); }
+html[data-theme="field"] body::after { display: none; }
+html[data-theme="field"] :focus-visible { outline-color: var(--pencil); }
+html[data-theme="field"] ::selection { background: var(--od); color: var(--bg); }
+html[data-theme="field"] .skip { background: var(--od); }
+
+/* headings, tabs and buttons are stencilled; data is typewritten */
+html[data-theme="field"] :is(h1, .panel-h h2, h2.ph, .plan-head h3, .prose h2, .prose h3, .card h2, .card > .h, .dlg-h h2, legend, .townlist h3, .keys-h, .place-name, .loading) { font-family: var(--f-head); letter-spacing: .08em; }
+html[data-theme="field"] h1 { font-size: 1.55rem; }
+html[data-theme="field"] .brand { align-items: center; }
+html[data-theme="field"] .stamp { display: block; margin: 0; font: 700 .64rem/1.2 var(--f-head); letter-spacing: .12em; text-transform: uppercase;
+  color: var(--od); border: 2px solid var(--od); padding: 3px 6px; }
+html[data-theme="field"] .kicker { font-family: var(--f-mono); color: var(--text2); }
+
+html[data-theme="field"] .tabs { justify-content: flex-start; gap: 6px; border-bottom: 3px double var(--c); padding: 8px 0 0; }
+html[data-theme="field"] .tabs [role="tab"] { font: 700 1.2rem/1 var(--f-head); letter-spacing: .1em; color: var(--text2); background: var(--hover);
+  border: 2px solid var(--line); border-bottom: 0; border-radius: 7px 7px 0 0; padding: 9px 16px 7px; margin-bottom: 0; }
+html[data-theme="field"] .tabs [role="tab"]:hover { color: var(--c); background: var(--bg2); }
+html[data-theme="field"] .tabs [role="tab"][aria-selected="true"] { color: var(--c); background: var(--bg2); border-color: var(--c); box-shadow: 0 3px 0 var(--bg2); }
+html[data-theme="field"] .tabs [role="tab"] .hk { font-family: var(--f-mono); }
+@media (max-width: 640px) { html[data-theme="field"] .tabs [role="tab"] { font-size: .92rem; padding: 8px 7px 6px; letter-spacing: .04em; }
+  html[data-theme="field"] h1 { font-size: 1.1rem; letter-spacing: .04em; }
+  html[data-theme="field"] .facts b { font-size: 1.1rem; } }
+html[data-theme="field"] .subtabs [role="tab"] { font: 700 1rem var(--f-head); letter-spacing: .08em; }
+html[data-theme="field"] .subtabs [role="tab"][aria-selected="true"] { border-bottom: 3px solid var(--pencil); }
+
+html[data-theme="field"] .pip-bot { border-top: 3px double var(--c); }
+html[data-theme="field"] kbd { font: 400 .8rem/1 var(--f-mono); background: var(--card); color: var(--c); border: 1px solid var(--c); border-radius: 3px; padding: 3px 5px 2px; box-shadow: 0 1px 0 var(--c); }
+
+html[data-theme="field"] :is(.btn, .mapctl button, .seg button) { font: 700 .8rem var(--f-head); letter-spacing: .1em; color: var(--c); border: 2px solid var(--c); background: rgba(255,255,255,.22); }
+html[data-theme="field"] :is(.btn, .mapctl button, .seg button):hover { background: var(--bg2); }
+html[data-theme="field"] .mapctl button { background: var(--card); font-size: 1.1rem; }
+html[data-theme="field"] button[aria-pressed="true"] { background: var(--od) !important; color: var(--bg) !important; border-color: var(--od) !important; }
+html[data-theme="field"] button:disabled { color: var(--text2); border-color: var(--faint); }
+html[data-theme="field"] :is(input[type="text"], input[type="search"], select) { font-family: var(--f-mono); background: var(--card); border-color: var(--line); }
+html[data-theme="field"] :is(input[type="checkbox"], input[type="radio"]) { background: var(--card); }
+html[data-theme="field"] input[type="checkbox"]::before { background: var(--pencil); clip-path: polygon(14% 52%, 0 66%, 38% 100%, 100% 22%, 86% 8%, 38% 72%); transform: scale(0) rotate(-6deg); width: 12px; height: 12px; }
+html[data-theme="field"] input[type="checkbox"]:checked::before { transform: scale(1) rotate(-6deg); }
+
+/* the map sheet, taped down at two corners */
+html[data-theme="field"] .mapwrap { border: 2px solid var(--c); }
+html[data-theme="field"][data-fx="on"] .mapwrap { box-shadow: 0 2px 8px rgba(40,30,10,.25); }
+html[data-theme="field"][data-fx="on"] .mapwrap::before, html[data-theme="field"][data-fx="on"] .mapwrap::after { content: ""; position: absolute; z-index: 1; pointer-events: none;
+  width: 96px; height: 26px; background: rgba(238,226,180,.72); box-shadow: 0 1px 2px rgba(0,0,0,.16); }
+html[data-theme="field"][data-fx="on"] .mapwrap::before { left: -22px; top: 12px; transform: rotate(-38deg); }
+html[data-theme="field"][data-fx="on"] .mapwrap::after { right: -24px; bottom: 44px; transform: rotate(-34deg); }
+html[data-theme="field"] :is(.scale, .cursor) { background: var(--card); border-color: var(--c); font-family: var(--f-mono); }
+html[data-theme="field"] .scale i { border-color: var(--c); }
+html[data-theme="field"] .modebar { background: var(--pencil); color: #fff; font-family: var(--f-ui); }
+html[data-theme="field"] .tip { background: var(--card); border-color: var(--c); font-family: var(--f-mono); font-weight: 400; }
+html[data-theme="field"] .t-loc, html[data-theme="field"] .t-minor { text-transform: uppercase; letter-spacing: .02em; font-weight: 400; }
+html[data-theme="field"] .t-gs:not(.sub):not(.r) { font-family: var(--f-head); letter-spacing: .2em; }
+html[data-theme="field"] .t-gs.sub { font-family: var(--f-pen); font-style: normal; }
+html[data-theme="field"] .t-meas { font-size: calc(var(--u) * 14px); }
+html[data-theme="field"] .t-region, html[data-theme="field"] .t-plan.mon, html[data-theme="field"] .t-plan.nw { font-family: var(--f-head); }
+html[data-theme="field"] .pip-only { display: none; }
+html[data-theme="field"] .pen-only { display: inline; }
+html[data-theme="field"][data-fx="on"] :is(#g-meas, #g-sel .pen-only) { filter: url(#pencil); }
+
+/* side panels, and the place card as a ruled index card with a rubber stamp */
+html[data-theme="field"] aside { scrollbar-color: var(--line) transparent; }
+html[data-theme="field"] .card { border: 1px solid var(--c); background: rgba(255,255,255,.16); }
+html[data-theme="field"] .card h2::after, html[data-theme="field"] .card > .h::after { background: var(--c); opacity: .5; }
+html[data-theme="field"] #info { position: relative; border: 0; border-top: 3px solid var(--pencil); background: var(--card);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 23px, rgba(60,90,160,.16) 23px 24px); box-shadow: 0 2px 6px rgba(40,30,10,.22); }
+html[data-theme="field"][data-fx="on"] #info { transform: rotate(-.5deg); }
+html[data-theme="field"] #info h2::after { display: none; }
+html[data-theme="field"] .place-name { font-size: 1.5rem; }
+html[data-theme="field"] #info:has(.rubber) .place-name { padding-right: 104px; }
+html[data-theme="field"] .rubber { display: block; position: absolute; right: 10px; top: 12px; transform: rotate(-11deg); border: 3px double var(--pencil); color: var(--pencil);
+  font: 700 .8rem/1.1 var(--f-head); letter-spacing: .1em; text-transform: uppercase; padding: 4px 7px; text-align: center; mix-blend-mode: multiply; }
+html[data-theme="field"][data-fx="on"] .rubber { opacity: .85; }
+html[data-theme="field"] .chip { font-family: var(--f-mono); font-weight: 400; letter-spacing: .04em; border-color: var(--c); }
+html[data-theme="field"] .chip.real { background: var(--od); border-color: var(--od); color: var(--bg); }
+html[data-theme="field"] .chip.gs { color: var(--pencil); border-color: var(--pencil); }
+html[data-theme="field"] .readout, html[data-theme="field"] dl.kv dd { font-family: var(--f-mono); }
+html[data-theme="field"] dl.kv dd.txt { font-family: var(--f-ui); }
+html[data-theme="field"] .lore { font-family: var(--f-mono); }
+html[data-theme="field"] a { color: var(--c); text-decoration-color: var(--pencil); }
+
+/* tables, figures and reading */
+html[data-theme="field"] .plan svg { border: 2px solid var(--c); }
+html[data-theme="field"] .facts { color: var(--c); }
+html[data-theme="field"] .facts div { border-top: 2px solid var(--c); }
+html[data-theme="field"] .facts b { font-family: var(--f-mono); font-size: 1.4rem; }
+html[data-theme="field"] th { color: var(--c); border-bottom: 2px solid var(--c); }
+html[data-theme="field"] td { border-bottom-color: var(--faint); }
+html[data-theme="field"] td.n, html[data-theme="field"] .townlist li span { font-family: var(--f-mono); }
+html[data-theme="field"] .rowbtn { font: 700 1rem var(--f-ui); }
+html[data-theme="field"] tr:focus-within :is(td, td.q, td.n, .rowbtn) { background: var(--od); color: var(--bg); }
+html[data-theme="field"] .mmtbl thead th { background: var(--bg); }
+html[data-theme="field"] .prose b { color: var(--c); }
+
+html[data-theme="field"] dialog { background: var(--bg2); border: 2px solid var(--c); box-shadow: 0 8px 30px rgba(40,30,10,.35); }
+html[data-theme="field"] dialog::backdrop { background: rgba(35,35,28,.45); }
+html[data-theme="field"] .dlg-h { border-bottom: 3px double var(--c); }
+html[data-theme="field"] fieldset { border-color: var(--line); }

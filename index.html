@@ -1,21 +1,24 @@
 <!doctype html>
-<html lang="en" data-tint="green" data-fx="on" data-keys="on">
+<html lang="en" data-theme="pip" data-tint="green" data-fx="on" data-keys="on">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Commonwealth Survey</title>
 <meta name="description" content="The Fallout 4 map warped onto real eastern Massachusetts, so you can measure the Commonwealth in true miles.">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#010904">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Stardos+Stencil:wght@400;700&family=Permanent+Marker&display=swap">
 <link rel="stylesheet" href="css/survey.css">
 <script>
-  // apply saved Pip-Boy settings before first paint, so the screen never flashes the wrong colour
-  try { const g = k => JSON.parse(localStorage.getItem('survey.' + k)), r = document.documentElement, t = g('tint');
-    if (['green', 'amber', 'blue', 'white'].includes(t)) r.dataset.tint = t; if (g('fx') === false) r.dataset.fx = 'off'; if (g('keys') === false) r.dataset.keys = 'off'; } catch { /* storage unavailable */ }
+  // apply saved settings before first paint, so the page never flashes the wrong look or colour;
+  // with no saved look, the field kit is for light mode and the Pip-Boy for dark
+  { const r = document.documentElement; let th = null;
+    try { const g = k => JSON.parse(localStorage.getItem('survey.' + k)), t = g('tint'); th = g('theme');
+      if (['green', 'amber', 'blue', 'white'].includes(t)) r.dataset.tint = t; if (g('fx') === false) r.dataset.fx = 'off'; if (g('keys') === false) r.dataset.keys = 'off'; } catch { /* storage unavailable */ }
+    r.dataset.theme = ['pip', 'field'].includes(th) ? th : matchMedia('(prefers-color-scheme: light)').matches ? 'field' : 'pip'; }
 </script>
 </head>
 <body>
@@ -37,6 +40,7 @@
 <div class="screen">
   <header class="pip-top">
     <div class="brand">
+      <p class="stamp" aria-hidden="true">Army Map Service<br>Corps of Engineers</p>
       <h1>Commonwealth Survey</h1>
       <p class="kicker">Fallout 4 on real ground · unofficial fan atlas</p>
     </div>
@@ -289,6 +293,12 @@
   <form method="dialog" class="dlg">
     <div class="dlg-h"><h2 id="dlg-settings-h">Settings</h2><button class="btn" value="close">Close</button></div>
     <fieldset>
+      <legend>Look</legend>
+      <label class="tint-opt"><input type="radio" name="theme" value="auto">Match my system: field kit by day, Pip-Boy by night</label>
+      <label class="tint-opt"><input type="radio" name="theme" value="pip">Pip-Boy</label>
+      <label class="tint-opt"><input type="radio" name="theme" value="field">Field survey kit</label>
+    </fieldset>
+    <fieldset>
       <legend>Pip-Boy colour</legend>
       <label class="tint-opt"><input type="radio" name="tint" value="green"><i style="background:#1aff80"></i>Green, the Fallout 4 default</label>
       <label class="tint-opt"><input type="radio" name="tint" value="amber"><i style="background:#ffb642"></i>Amber, as in New Vegas</label>
@@ -296,8 +306,8 @@
       <label class="tint-opt"><input type="radio" name="tint" value="white"><i style="background:#e4ece6"></i>White</label>
     </fieldset>
     <fieldset>
-      <legend>Screen</legend>
-      <label class="check"><input type="checkbox" id="set-fx">Scanlines and glow</label>
+      <legend>Texture</legend>
+      <label class="check"><input type="checkbox" id="set-fx">Scanlines and glow, or paper grain and tape</label>
       <p class="small">Turn these off for the crispest text. They also switch off when your system asks for more contrast.</p>
     </fieldset>
     <fieldset>

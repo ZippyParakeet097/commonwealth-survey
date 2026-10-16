@@ -4,8 +4,6 @@ The Fallout 4 map warped onto real eastern Massachusetts, so you can measure the
 
 The game squeezes Boston and its suburbs into a few square miles. This tool puts every game location back on the real ground: real landmarks sit where they really are (Diamond City on Fenway Park, the Castle on Fort Independence), and fictional places are placed by stretching the game map to fit them. It is built for lore writers, modders and anyone who wants a realistic sense of how big the Commonwealth is, and how far the Sole Survivor walked looking for Shaun.
 
-**Open it:** https://zippyparakeet097.github.io/commonwealth-survey/
-
 ## What it does
 
 - **Scale grid.** Even squares over the game map, sized ¼ mi to 10 mi (or ½ km to 20 km), or sized to the zoom automatically. Columns are lettered and rows numbered from the northwest corner, so every place has a grid reference like `G6` that you can cite in your own writing.
@@ -17,9 +15,17 @@ The game squeezes Boston and its suburbs into a few square miles. This tool puts
 - **Site plans** of Diamond City, the Castle, Fort Strong and Hangman's Alley, drawn from OpenStreetMap at true scale.
 - Miles or kilometres, light or dark (follows your system), and links that open on a place: `…/#place=Diamond%20City`.
 
-## Use it offline
+## Run it
 
-Download `commonwealth-survey.html` from the [latest release](https://github.com/ZippyParakeet097/commonwealth-survey/releases/latest). It is the whole tool in one file and opens straight from disk, no internet needed (except for the web fonts, which fall back to system fonts).
+You need [Node.js](https://nodejs.org/) 18 or newer; there is nothing else to install.
+
+```sh
+git clone https://github.com/ZippyParakeet097/commonwealth-survey.git
+cd commonwealth-survey
+npm start          # then open http://localhost:8080
+```
+
+Or build the single-file version, `npm run build`, and open `dist/commonwealth-survey.html`. It is the whole tool in one file: it opens straight from disk, works offline (the web fonts fall back to system fonts) and can be shared on its own.
 
 ## Use the data
 
@@ -65,8 +71,6 @@ Corrections to positions, real counterparts and notes are the most useful contri
 1. Edit `data/locations.csv` (any spreadsheet app works; keep the columns as they are).
 2. Run `npm run check` to validate it.
 3. Open a pull request saying what you changed and why: the in-game evidence, or the real place you matched.
-
-To run the site locally you need [Node.js](https://nodejs.org/) 18 or newer. There are no dependencies to install.
 
 ```sh
 npm start          # serve at http://localhost:8080

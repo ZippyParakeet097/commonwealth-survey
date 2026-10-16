@@ -12,7 +12,7 @@ async function main() {
   let D;
   try { D = await loadData(); } catch (err) {
     $('loading').innerHTML = location.protocol === 'file:'
-      ? 'This page loads its map data with <code>fetch</code>, which browsers block for files opened from disk.<br>Run <code>npm start</code> in the project folder, or download the single-file version from the Releases page.'
+      ? 'This page loads its map data with <code>fetch</code>, which browsers block for files opened from disk.<br>Run <code>npm start</code> in the project folder, or build the single-file version with <code>npm run build</code>.'
       : `Could not load the map data (${String(err.message || err).replace(/</g, '&lt;')}).`;
     return;
   }

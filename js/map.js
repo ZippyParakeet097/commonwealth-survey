@@ -120,7 +120,13 @@ export function createMap({ D, places, byId, nw }) {
   const relabel = () => { places.forEach(l => { l.lab._w = undefined; }); render(); };
   if (document.fonts) { document.fonts.ready.then(relabel); document.fonts.addEventListener('loadingdone', relabel); }
 
+  // the view stays on the sheet: zoomed in, it can't pan past an edge; zoomed out past the sheet, it centres it
+  function clamp() {
+    for (const [p, s, max] of [['x', 'w', B.w], ['y', 'h', B.h]])
+      vb[p] = vb[s] >= max ? (max - vb[s]) / 2 : Math.min(Math.max(vb[p], 0), max - vb[s]);
+  }
   function render() {
+    clamp();
     svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
     const u = vb.w / (svg.clientWidth || 800), z = B.w / vb.w;
     svg.style.setProperty('--u', u);

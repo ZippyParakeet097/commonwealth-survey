@@ -278,7 +278,7 @@ legend { padding: 0 6px; font-weight: 700; letter-spacing: .1em; text-transform:
    An Army Map Service sheet carried around the Commonwealth: khaki paper, olive drab, slate water, a
    typewritten index card per place, and red grease pencil for anything the reader adds (routes, pins,
    the selection). Colours are fixed here rather than mixed from a tint; scripts/check-contrast.mjs
-   checks the pairs. Texture (grain, folds, tape, the tilted card) follows the same setting as the
+   checks the pairs. Texture (grain, folds, the tilted card) follows the same setting as the
    Pip-Boy's scanlines. */
 html[data-theme="field"] {
   --c: #23231c;  --bg: #ddd2b0; --bg2: #ebe3c8; --land: #e6dcbc; --hover: #cfc29a;
@@ -350,13 +350,9 @@ html[data-theme="field"] :is(input[type="checkbox"], input[type="radio"]) { back
 html[data-theme="field"] input[type="checkbox"]::before { background: var(--pencil); clip-path: polygon(14% 52%, 0 66%, 38% 100%, 100% 22%, 86% 8%, 38% 72%); transform: scale(0) rotate(-6deg); width: 12px; height: 12px; }
 html[data-theme="field"] input[type="checkbox"]:checked::before { transform: scale(1) rotate(-6deg); }
 
-/* the map sheet, taped down at two corners */
+/* the map sheet */
 html[data-theme="field"] .mapwrap { border: 2px solid var(--c); }
 html[data-theme="field"][data-fx="on"] .mapwrap { box-shadow: 0 2px 8px rgba(40,30,10,.25); }
-html[data-theme="field"][data-fx="on"] .mapwrap::before, html[data-theme="field"][data-fx="on"] .mapwrap::after { content: ""; position: absolute; z-index: 1; pointer-events: none;
-  width: 96px; height: 26px; background: rgba(238,226,180,.72); box-shadow: 0 1px 2px rgba(0,0,0,.16); }
-html[data-theme="field"][data-fx="on"] .mapwrap::before { left: -22px; top: 12px; transform: rotate(-38deg); }
-html[data-theme="field"][data-fx="on"] .mapwrap::after { right: -24px; bottom: 44px; transform: rotate(-34deg); }
 html[data-theme="field"] :is(.scale, .cursor) { background: var(--card); border-color: var(--c); font-family: var(--f-mono); }
 html[data-theme="field"] .scale i { border-color: var(--c); }
 html[data-theme="field"] .modebar { background: var(--pencil); color: #fff; font-family: var(--f-ui); }

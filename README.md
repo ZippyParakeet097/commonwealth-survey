@@ -14,7 +14,7 @@ The game squeezes Boston and its suburbs into a few square miles. This tool puts
 - **The Glowing Sea.** The in-game Sea warped onto real ground, plus a theory of how far it runs past the map's edge, worked out from fallout drift, October winds and real terrain. Both nuclear craters are drawn at their estimated true size.
 - **Nuka-World, theorized.** The park is off the game map, so it gets its own figure: southern New England with the survey sheet, the game map and the fan-favoured site, Six Flags New England in Agawam, about 66 miles west-southwest of the transit center. The fastest real drive there, 82 miles by the Mass Pike, is drawn on it. The figure and the place card give the reasoning and sources.
 - **Places on real ground:** site plans of Diamond City, the Castle, Fort Strong and Hangman's Alley, drawn from OpenStreetMap at true scale.
-- **A Pip-Boy screen.** The survey is laid out like the Pip-Boy 3000 Mark IV: SURVEY, SITES, DATA, MAP and SEA tabs in the game's own slot order, quests and workshops under DATA, and a key-hint bar along the bottom. Pick the Pip-Boy colour under Settings: green (the Fallout 4 default), amber (New Vegas), blue or white.
+- **On a Pip-Boy.** The survey runs on the Pip-Boy 3000 from Fallout 3 and New Vegas. Its casing frames the screen: the rad gauge (which reads the selected place, so the Glowing Sea pegs it), the badge, the model plate, the tuning knob and the brass thumbwheel. SURVEY, SITES, DATA, MAP and SEA are the lamp buttons under the screen, in Fallout 4's slot order, and the open one is lit. On the glass, as in the games, a bracketed title bar runs across the top with readouts and the clock, the prompts sit under it, and the sub-tabs run along the foot with the open one boxed. The map marks places with squares, as New Vegas does: filled where the position comes from a real site or the game's clues, hollow where it is estimated. Settlements carry a Minutemen pennant, downtown Boston folds into one counted marker until you zoom in, and routes are dotted like a quest path. Pick the colour under Settings from the four the games offer: green (the Fallout 3 default), amber (the New Vegas default), blue or white. On a phone the casing folds away and the lamp buttons stay along the bottom.
 - **Or a field survey kit.** A second look: an Army Map Service sheet on khaki paper, with stencilled headings, a typewritten index card for each place and your own routes, pins and selections in red grease pencil. Choose it under Settings; by default the page uses it in light mode and the Pip-Boy in dark mode.
 - Miles or kilometres, and links that open on a place: `…/#place=Diamond%20City`.
 
@@ -33,7 +33,7 @@ Everything works from the keyboard, and the keys follow the game where it has on
 
 The letter and number shortcuts can be turned off under Settings (WCAG 2.1.4), and never fire while you type in a field. Tab, the arrow keys, Enter and Esc always work.
 
-The page aims at WCAG 2.2 AA. Every Pip-Boy shade is a mix of the chosen colour with black, and `npm run check` verifies that each text and control colour pair meets AA contrast for every tint and for the field kit. With one colour on screen, map layers are told apart by line style and texture rather than hue: wetlands by marsh tufts, the Glowing Sea by a hatched band inside its edge, Brotherhood of Steel places by the Brotherhood's emblem and its ground (Logan Airport) by cross-hatching inside a double border, the game map's edge by a dash-dot line. Selections and changes are announced to screen readers. Scanlines and glow, or the field kit's paper grain, can be switched off; the scanlines also switch off by themselves when your system asks for more contrast.
+The page aims at WCAG 2.2 AA. Every Pip-Boy shade is a mix of the chosen colour with black, and `npm run check` verifies that each text and control colour pair meets AA contrast for every tint, for the tab labels on the Pip-Boy's casing and for the field kit. With one colour on screen, map layers are told apart by line style and texture rather than hue: wetlands by marsh tufts, the Glowing Sea by a hatched band inside its edge, Brotherhood of Steel places by the Brotherhood's emblem and its ground (Logan Airport) by cross-hatching inside a double border, the game map's edge by a dash-dot line. Selections and changes are announced to screen readers. Scanlines and glow, or the field kit's paper grain, can be switched off; the scanlines also switch off by themselves when your system asks for more contrast. The Pip-Boy's power-on and screen flicker don't play when your system asks for reduced motion.
 
 ## Run it
 
@@ -101,7 +101,7 @@ npm run build      # write the single-file version to dist/commonwealth-survey.h
 
 Opening `index.html` straight from disk won't work, because browsers block the data requests; use `npm start` or the single-file build.
 
-The code is plain JavaScript modules in `js/` with no build step: `map.js` draws and pans the map, `grid.js` is the scale grid, `measure.js` the route tool, `card.js` the place card, `panels.js` the tables and notes, and `geo.js` the projection and unit formatting.
+The code is plain JavaScript modules in `js/` with no build step: `map.js` draws and pans the map, `grid.js` is the scale grid, `measure.js` the route tool, `card.js` the place card, `panels.js` the tables and notes, `pipboy.js` the tabs, settings and keyboard (and the Pip-Boy's title bar, gauge and knob), and `geo.js` the projection and unit formatting. The Pip-Boy look is matched against the games' own screens; `reference/pipboy-3000/NOTES.md` has the measurements and where they came from.
 
 ## Sources and licences
 
@@ -111,6 +111,7 @@ The code is plain JavaScript modules in `js/` with no build step: `map.js` draws
 - Nuka-World figure: coastline from [Natural Earth](https://www.naturalearthdata.com/) (public domain) and US state boundaries from the US Census Bureau, both via the [world-atlas](https://github.com/topojson/world-atlas) and [us-atlas](https://github.com/topojson/us-atlas) packages.
 - Terrain: AWS Terrain Tiles (USGS elevation). Winds: Iowa Environmental Mesonet. Crater scaling: Glasstone & Dolan, *The Effects of Nuclear Weapons*.
 - Game locations: the game's own location table on the 2048 map grid.
+- Fonts: the Pip-Boy is set in Survey Mono (`assets/fonts/`), a stand-in for the games' Monofonto, made from [Inconsolata](https://github.com/googlefonts/Inconsolata) by `scripts/make-font.py` and under the [SIL Open Font License](assets/fonts/OFL.txt). The casing's badge uses [Courgette](https://fonts.google.com/specimen/Courgette); the field kit uses Courier Prime, Special Elite, Stardos Stencil and Permanent Marker, all from Google Fonts.
 
 The code is under the [MIT License](LICENSE).
 

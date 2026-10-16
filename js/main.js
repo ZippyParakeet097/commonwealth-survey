@@ -1,9 +1,9 @@
-import { units, project, unproject, fmtLatLon } from './geo.js';
+import { units, project, unproject, fmtLatLon, km, fmtDist } from './geo.js';
 import { $, on, prefs, announce } from './util.js';
 import { loadData, buildPlaces, buildNukaWorld } from './data.js';
 import { createMap } from './map.js';
 import { createGrid } from './grid.js';
-import { createMeasure } from './measure.js';
+import { createMeasure, SEARCH } from './measure.js';
 import { createCard } from './card.js';
 import { createPanels } from './panels.js';
 import { makePlans } from './plans.js';
@@ -45,22 +45,43 @@ async function main() {
   };
   // what the crosshair is over, said once the keys stop
   let kbdTimer = 0;
-  map.hooks.kbd = (pt, p) => { clearTimeout(kbdTimer); kbdTimer = setTimeout(() => {
-    const ref = grid.ref(pt); announce(p ? `Crosshair on ${p.n}${ref ? ', square ' + ref : ''}.` : ref ? `Crosshair in square ${ref}.` : ''); }, 700); };
+  map.hooks.kbd = (pt, p, fold) => { clearTimeout(kbdTimer); kbdTimer = setTimeout(() => {
+    const ref = grid.ref(pt); announce(p ? `Crosshair on ${p.n}${ref ? ', square ' + ref : ''}.` : fold ? fold + '.' : ref ? `Crosshair in square ${ref}.` : ''); }, 700); };
   map.hooks.move = pt => {
     const [lat, lon] = unproject(pt.x, pt.y), ref = grid.ref(pt), c = $('cursor');
     c.textContent = fmtLatLon(lat, lon) + (ref ? ` · ${ref}` : ''); c.hidden = false;
     measure.hover(pt);
   };
   map.hooks.leave = () => { $('cursor').hidden = true; measure.leave(); };
-  grid.onChange(() => card.refresh());
+  grid.onChange(() => { card.refresh(); pip.titleBar(); });
   pip.onTheme(() => map.relabel());
+  // the Pip-Boy's title bar changes its readouts with the tab, as STATS, ITEMS and DATA each have their own
+  const marked = places.filter(p => p.kind === 'loc'), Z = D.gs.zone;
+  const READ = {
+    survey: () => [['Places', places.length], ['Marked', marked.length], ['Anchors', marked.filter(p => p.k === 1).length]],
+    sites: () => [['Plans', Object.keys(plans.PLANS).length], ['Nuka-World', fmtDist(km(byId.get('Nuka-World transit center'), nw), 0)]],
+    data: () => [['Stops', SEARCH.length], ['Workshops', map.mmList.length]],
+    map: () => [['Places', marked.length], ['Settlements', map.mmList.length], ['Grid', grid.state.on ? grid.label().replace(/ grid$/, '') : 'off']],
+    sea: () => [['Reach', `≈${Z.reach} mi`], ['Zone', `${Z.zone_sqmi} sq mi`]],
+  };
+  pip.setReadouts(tab => READ[tab]());
+  // its Geiger counter reads the selected place: the craters peg it, the Glowing Sea is well into the red, a
+  // radioactive area is halfway; elsewhere it idles low. A little jitter from the name keeps the needle moving.
+  const jitter = p => (p.n.length % 5) / 20;
+  const radsAt = p => p.n === 'Crater of Atom' ? 9.6 : p.n === 'Cambridge crater' ? 6.6 : p.gs ? 7 + jitter(p) * 5 : p.t === 'Radioactive Area' ? 4.4 : .15 + jitter(p) * 2;
+  card.onChange(c => pip.rads(c.place ? radsAt(c.place) : .3));
 
   // find a place
   const dl = $('places');
   [...places, nw].sort((a, b) => (a.kind === 'unm') - (b.kind === 'unm') || a.id.localeCompare(b.id)).forEach(p => { const o = document.createElement('option'); o.value = p.id; if (p.kind === 'unm') o.label = 'unmarked'; dl.appendChild(o); });
   $('q').addEventListener('change', e => { const p = byId.get(e.target.value.trim()); if (p) { reveal(p); card.select(p, true); announce(`Selected ${p.n}. The map is centred on it.`); } });
-  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { map.VIEWS[b.dataset.view](); announce(`Map view: ${b.textContent}.`); });
+  // the view last chosen is boxed, as the Pip-Boy boxes the open sub-tab, until the map moves off it
+  const viewButtons = [...document.querySelectorAll('[data-view]')];
+  let viewAt = null;
+  const showView = b => { map.VIEWS[b.dataset.view](); viewAt = { ...map.vb }; viewButtons.forEach(x => x === b ? x.setAttribute('aria-current', 'true') : x.removeAttribute('aria-current')); };
+  viewButtons.forEach(b => b.onclick = () => { showView(b); announce(`Map view: ${b.textContent}.`); });
+  map.hooks.render.push(() => { const v = map.vb;
+    if (viewAt && ['x', 'y', 'w', 'h'].some(k => Math.abs(v[k] - viewAt[k]) > v.w * 1e-6)) { viewAt = null; viewButtons.forEach(x => x.removeAttribute('aria-current')); } });
 
   // units
   const unitButtons = document.querySelectorAll('[data-unit]');
@@ -79,8 +100,8 @@ async function main() {
   const linked = h.get('place') && byId.get(h.get('place')), pin = (h.get('pin') || '').split(',').map(Number);
   if (linked) { reveal(linked); card.select(linked, true); }
   else if (pin.length === 2 && pin.every(Number.isFinite)) { const pt = project(pin[0], pin[1]); card.pin(pt); map.focus(pt); }
-  else { map.VIEWS.game(); card.select(byId.get('Sanctuary Hills')); }
-  measure.refresh();
+  else { showView(viewButtons[0]); card.select(byId.get('Sanctuary Hills')); }
+  measure.refresh(); pip.titleBar();
   $('loading').hidden = true;
 }
 main();

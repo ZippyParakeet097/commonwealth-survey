@@ -1,4 +1,4 @@
-import { KM_PER_MI, FT_PER_KM, units } from './geo.js';
+import { KM_PER_MI, FT_PER_KM, units, project } from './geo.js';
 import { $, NSS, P, esc, mk, on } from './util.js';
 import { placeLabels } from './labels.js';
 import { planDetail, patterns } from './plans.js';
@@ -7,6 +7,9 @@ import { keysOn } from './pipboy.js';
 // sites inside Diamond City: folded into its marker until zoomed in close
 const IN_DC = new Set(['Home Plate', 'Diamond City market']);
 const MIN_W = 0.45;  // closest zoom, in sheet km across
+// the Pip-Boy look folds downtown Boston into one counted marker until zoomed in past this
+const BOSTON = { ...project(42.3580, -71.0610), r: 2.3, z: 3.2 };
+const pipLook = () => document.documentElement.dataset.theme === 'pip';
 
 // bounding box of every coordinate in an SVG path made of M/L/Z commands
 const pathBox = d => { const n = d.match(/-?\d+\.?\d*/g).map(Number), xs = n.filter((_, i) => !(i % 2)), ys = n.filter((_, i) => i % 2);
@@ -69,18 +72,30 @@ export function createMap({ D, places, byId, nw }) {
 
   locs.forEach(l => {
     const col = l.bos ? 'var(--bos)' : 'var(--loc)';
-    // Brotherhood places carry the Brotherhood emblem, everything else a circle; render() sizes the
-    // emblem and keeps its half-width in r, which label placement reads as the marker's size
+    // Brotherhood places carry the Brotherhood emblem, everything else a rect that render() shapes for the
+    // look: square on the Pip-Boy, as New Vegas marks places, round on the field kit. Filled where the
+    // position comes from a real site or the game's clues, hollow where it is estimated. render() keeps
+    // each marker's half-width in rad, which label placement reads as the marker's size.
     l.dot = l.bos ? mk('use', { href: '#bos-mark', class: 'bos' }, $('loc-dots'))
-      : mk('circle', { cx: l.x, cy: l.y, fill: l.k ? col : 'var(--land)', stroke: col, 'stroke-width': 1.3, 'vector-effect': 'non-scaling-stroke' }, $('loc-dots'));
+      : mk('rect', { class: 'k' + l.key, fill: l.k ? col : 'var(--land)', stroke: col, 'stroke-width': 1.3, 'vector-effect': 'non-scaling-stroke' }, $('loc-dots'));
     if (l.n === 'The Prydwen') { const g = mk('g', { class: 'bos' }, $('g-loc')); l.tether = mk('line', { stroke: 'var(--bos)', 'stroke-width': 1, 'stroke-dasharray': '2 2', 'vector-effect': 'non-scaling-stroke' }, g); l.icon = mk('use', { href: '#prydwen' }, g); }
     l.lab = mk('text', { x: l.x, y: l.y, class: (l.key ? 't-loc' : 't-minor') + (l.bos ? ' bos' : '') }, $('loc-labels')); l.lab.textContent = l.label;
   });
   unm.forEach(l => {
-    l.dot = mk('circle', { cx: l.x, cy: l.y, fill: 'var(--unm)', stroke: 'var(--land)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' }, $('unm-dots'));
+    l.dot = mk('rect', { fill: 'var(--unm)', stroke: 'var(--land)', 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' }, $('unm-dots'));
     l.lab = mk('text', { x: l.x, y: l.y, class: 't-unm' }, $('unm-labels')); l.lab.textContent = l.label;
   });
   D.sites.forEach(s => { s.lab = mk('text', { x: s.x, y: s.y, class: 't-site', 'text-anchor': 'middle' }, $('site-labels')); s.lab.textContent = s.n; });
+  // downtown Boston, folded on the Pip-Boy into one marker with its count until you zoom in; Diamond City,
+  // the Brotherhood and the Prydwen stay out
+  [...locs, ...unm].forEach(l => { l.downtown = !l.bos && !l.icon && l.n !== 'Diamond City' && Math.hypot(l.x - BOSTON.x, l.y - BOSTON.y) < BOSTON.r; });
+  const fold = mk('g', { id: 'g-fold', class: 'pip-only' }), foldN = locs.filter(l => l.downtown).length;
+  svg.insertBefore(fold, $('g-meas'));
+  const foldRing = mk('circle', { cx: BOSTON.x, cy: BOSTON.y, class: 'fold-ring', 'vector-effect': 'non-scaling-stroke' }, fold);
+  const foldNum = mk('text', { x: BOSTON.x, class: 'fold-n', 'text-anchor': 'middle' }, fold), foldSub = mk('text', { x: BOSTON.x, class: 'fold-s', 'text-anchor': 'middle' }, fold);
+  foldNum.textContent = foldN; foldSub.textContent = 'BOSTON · ZOOM IN';
+  let folded = false;
+  const onFold = (x, y) => folded && Math.hypot(x - BOSTON.x, y - BOSTON.y) < api.u * 22;
   mmList.forEach(l => { l.flag = mk('use', { href: '#mm-flag' }, $('g-mm')); l.fr = mk('rect', { fill: 'none', stroke: 'var(--land)', 'stroke-width': 1.5, 'vector-effect': 'non-scaling-stroke' }, $('g-mm')); });
   const gsT = ['The Glowing Sea', 'theorized, beyond the map edge', 'fallout drift, NE wind', 'outer limit, if the hills had not held it']
     .map((s, i) => { const t = mk('text', { class: ['t-gs', 't-gs sub', 't-gs r', 't-gs sub'][i], 'text-anchor': 'middle' }, $('gs-labels')); t.textContent = s; return t; });
@@ -130,24 +145,35 @@ export function createMap({ D, places, byId, nw }) {
     svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
     const u = vb.w / (svg.clientWidth || 800), z = B.w / vb.w;
     svg.style.setProperty('--u', u);
-    const r = u * 3.6, off = u * 6, mmOn = on('mm');
+    const r = u * 3.6, off = u * 6, mmOn = on('mm'), pip = pipLook(), sq = pip ? .86 : 1;
+    folded = pip && z < BOSTON.z && on('loc');
+    // a marker of half-size h at x, y: square on the Pip-Boy (a little smaller, to weigh the same), round on the field kit
+    const shape = (el, x, y, h) => { h *= sq; el.setAttribute('x', x - h); el.setAttribute('y', y - h); el.setAttribute('width', 2 * h); el.setAttribute('height', 2 * h); el.setAttribute('rx', pip ? 0 : h); };
     locs.forEach(l => {
-      l.dot.setAttribute('r', l.key ? r * 1.15 : r * .8);
-      if (l.bos) { const s = u * (l.key ? 20 : 16); l.dot.setAttribute('r', s / 2);
+      l.rad = l.key ? r * 1.15 : r * .8;
+      if (!l.bos) shape(l.dot, l.x, l.y, l.rad);
+      if (l.bos) { const s = u * (l.key ? 20 : 16); l.rad = s / 2;
         l.dot.setAttribute('x', l.x - s / 2); l.dot.setAttribute('y', l.y - s / 2); l.dot.setAttribute('width', s); l.dot.setAttribute('height', s); }
       const fo = l.mm && mmOn ? u * 13 : l.bos ? u * 13 : off;
       l.lab.setAttribute('x', l.x + fo); l.lab.setAttribute('y', l.y + u * 4);
       if (l.icon) {  // grows from 16 px (whole sheet) to 42 px (harbor close-up)
-        const px = Math.max(16, Math.min(42, 16 + 9 * Math.log2(z))), w = u * px, h = w * 285 / 480, top = l.y - h - u * px * .38; l.dot.setAttribute('r', 0);
+        const px = Math.max(16, Math.min(42, 16 + 9 * Math.log2(z))), w = u * px, h = w * 285 / 480, top = l.y - h - u * px * .38; l.rad = 0;
         l.icon.setAttribute('x', l.x - w / 2); l.icon.setAttribute('y', top); l.icon.setAttribute('width', w); l.icon.setAttribute('height', h);
         l.tether.setAttribute('x1', l.x); l.tether.setAttribute('y1', top + h * .9); l.tether.setAttribute('x2', l.x); l.tether.setAttribute('y2', l.y);
         l.lab.setAttribute('x', l.x + w / 2 + u * 3); l.lab.setAttribute('y', top + h / 2 + u * 4); l.dot.setAttribute('width', 0); l.dot.setAttribute('height', 0);
       }
       l.lab.style.display = l.key ? (z >= 1.4 || l.key === 2 ? '' : 'none') : (z >= 6 ? '' : 'none');
-      l.hid = IN_DC.has(l.n) && z < 90; l.dot.style.display = l.hid ? 'none' : ''; if (l.hid) l.lab.style.display = 'none';
+      l.hid = (IN_DC.has(l.n) && z < 90) || (folded && l.downtown && l !== api.sel);
+      // on the Pip-Boy a settlement's pennant is its marker
+      l.dot.style.display = l.hid || (pip && l.mm && mmOn) ? 'none' : ''; if (l.hid) l.lab.style.display = 'none';
+      if (l.flag) l.flag.style.display = l.hid ? 'none' : '';
       l.stacked = false;
     });
-    unm.forEach(l => { l.dot.setAttribute('r', r * .55); l.lab.setAttribute('x', l.x + off); l.lab.setAttribute('y', l.y + u * 4); l.lab.style.display = z >= 8 || l === api.sel ? '' : 'none'; });
+    unm.forEach(l => { l.rad = r * .55; shape(l.dot, l.x, l.y, l.rad); l.hid = folded && l.downtown && l !== api.sel; l.dot.style.display = l.hid ? 'none' : '';
+      l.lab.setAttribute('x', l.x + off); l.lab.setAttribute('y', l.y + u * 4); l.lab.style.display = !l.hid && (z >= 8 || l === api.sel) ? '' : 'none'; });
+    fold.style.display = folded ? '' : 'none';
+    if (folded) { foldRing.setAttribute('r', u * 17); foldNum.setAttribute('y', BOSTON.y + u * 5.2); foldNum.style.fontSize = u * 15 + 'px';
+      foldSub.setAttribute('y', BOSTON.y + u * 31); foldSub.style.fontSize = u * 9.5 + 'px'; }
     stacks.forEach(g => {
       g.sort((a, b) => (!!b.mm - !!a.mm) || (b.key - a.key));
       const vis = g.filter(l => l.lab.style.display !== 'none' && !l.hid), x = Math.max(...vis.map(l => +l.lab.getAttribute('x')));
@@ -155,8 +181,10 @@ export function createMap({ D, places, byId, nw }) {
       g.slice(1).forEach(l => { if (!l.mm) l.dot.style.display = 'none'; });
     });
     const fw = u * 20, fh = u * 13;
-    mmList.forEach(l => { for (const e of [l.flag, l.fr]) { e.setAttribute('x', l.x - fw / 2); e.setAttribute('y', l.y - fh / 2); e.setAttribute('width', fw); e.setAttribute('height', fh); } });
-    const busy = placeLabels({ vb, u, off, fw, fh, locs, unm, sel: api.sel, show: { mm: mmOn, loc: on('loc'), bos: on('bos'), unm: on('unm') } });
+    mmList.forEach(l => { for (const e of [l.flag, l.fr]) { e.setAttribute('x', l.x - fw / 2); e.setAttribute('y', l.y - fh / 2); e.setAttribute('width', fw); e.setAttribute('height', fh); }
+      l.fr.style.display = pip || l.hid ? 'none' : ''; });
+    const busy = placeLabels({ vb, u, off, fw, fh, locs, unm, sel: api.sel, show: { mm: mmOn, loc: on('loc'), bos: on('bos'), unm: on('unm') },
+      blocks: folded ? [[BOSTON.x - u * 19, BOSTON.y - u * 19, BOSTON.x + u * 19, BOSTON.y + u * 19], [BOSTON.x - u * 52, BOSTON.y + u * 22, BOSTON.x + u * 52, BOSTON.y + u * 34]] : [] });
     // real-site names, unless one would sit on a visible location label (e.g. Quincy Quarries over Vault 88)
     const shown = locs.filter(l => l.lab.style.display !== 'none' && !l.hid).map(l => { const b = l.box || [0, 0, 0, 0]; return { x: b[0], y: b[3], w: b[2] - b[0] }; });
     D.sites.forEach(s => { const y = s.y + u * 14, w = s.n.length * u * 5.6; s.lab.setAttribute('y', y);
@@ -237,7 +265,7 @@ export function createMap({ D, places, byId, nw }) {
     const b = svg.getBoundingClientRect(), dx = e.clientX - prev[0], dy = e.clientY - prev[1]; moved += Math.abs(dx) + Math.abs(dy);
     vb.x -= dx / b.width * vb.w; vb.y -= dy / b.height * vb.h; render();
   });
-  svg.addEventListener('pointerup', e => { if (ptrs.size === 1 && moved < 5 && hooks.tap) { const [x, y] = toMap(e.clientX, e.clientY); hooks.tap({ x, y }, nearest(e)); }
+  svg.addEventListener('pointerup', e => { if (ptrs.size === 1 && moved < 5 && hooks.tap) { const [x, y] = toMap(e.clientX, e.clientY); if (onFold(x, y)) VIEWS.boston(); else hooks.tap({ x, y }, nearest(e)); }
     ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = null; if (!ptrs.size) svg.classList.remove('dragging'); });
   svg.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); if (!ptrs.size) svg.classList.remove('dragging'); });
   svg.addEventListener('pointerleave', () => { $('tip').hidden = true; if (hooks.leave) hooks.leave(); });
@@ -254,21 +282,21 @@ export function createMap({ D, places, byId, nw }) {
     if (step) { e.preventDefault(); pan(step[0] * .08 * big, step[1] * .08 * big); kbdMoved(); }
     else if (k === '+' || k === '=') { e.preventDefault(); zoomMid(1.6); kbdMoved(); }
     else if (k === '-' || k === '_') { e.preventDefault(); zoomMid(1 / 1.6); kbdMoved(); }
-    else if (k === 'Enter' || k === ' ' || (k === 'e' && keysOn())) { e.preventDefault(); if (hooks.tap) { const c = centre(); hooks.tap(c, nearestAt(c.x, c.y, 18)); kbdMoved(); } }
+    else if (k === 'Enter' || k === ' ' || (k === 'e' && keysOn())) { e.preventDefault(); const c = centre(); if (onFold(c.x, c.y)) { VIEWS.boston(); kbdMoved(); } else if (hooks.tap) { hooks.tap(c, nearestAt(c.x, c.y, 18)); kbdMoved(); } }
   });
   // after a keyboard move: coordinates and any place under the crosshair, as the pointer would show them
   function kbdMoved(quiet) {
-    const c = centre(), p = nearestAt(c.x, c.y, 18), tip = $('tip'), s = svg.getBoundingClientRect(), b = wrap.getBoundingClientRect();
+    const c = centre(), p = nearestAt(c.x, c.y, 18), tip = $('tip'), s = svg.getBoundingClientRect(), b = wrap.getBoundingClientRect(), f = !p && onFold(c.x, c.y);
     if (hooks.move) hooks.move(c);
-    tip.hidden = !p; if (p) { tip.textContent = p.n; tip.style.left = (s.left - b.left + s.width / 2) + 'px'; tip.style.top = (s.top - b.top + s.height / 2 - 10) + 'px'; }
-    if (hooks.kbd && !quiet) hooks.kbd(c, p);
+    tip.hidden = !p && !f; if (p || f) { tip.textContent = p ? p.n : FOLD_TIP(); tip.style.left = (s.left - b.left + s.width / 2) + 'px'; tip.style.top = (s.top - b.top + s.height / 2 - 10) + 'px'; }
+    if (hooks.kbd && !quiet) hooks.kbd(c, p, f && FOLD_TIP());
   }
   // arriving on the map shows where the crosshair is; it is spoken only once the reader moves it
   svg.addEventListener('focus', () => { if (svg.matches(':focus-visible')) kbdMoved(true); });
   svg.addEventListener('blur', () => { svg.classList.remove('ptr'); $('tip').hidden = true; if (hooks.leave) hooks.leave(); });
   function nearestAt(x, y, px) {
     const u = vb.w / (svg.clientWidth || 800); let best = null, bd = px * u;
-    const pool = [...(on('loc') ? locs.filter(l => (!l.bos || on('bos')) && !l.hid) : on('mm') ? mmList : []), ...(on('unm') ? unm : [])];
+    const pool = [...(on('loc') ? locs.filter(l => (!l.bos || on('bos')) && !l.hid) : on('mm') ? mmList.filter(l => !l.hid) : []), ...(on('unm') ? unm.filter(l => !l.hid) : [])];
     pool.forEach(p => { const d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = p; } });
     return best;
   }
@@ -277,12 +305,20 @@ export function createMap({ D, places, byId, nw }) {
     if (e.pointerType !== 'mouse') return;
     const [x, y] = toMap(e.clientX, e.clientY);
     if (hooks.move) hooks.move({ x, y });
-    const p = nearest(e), tip = $('tip');
+    const p = nearest(e) || (onFold(x, y) ? { n: FOLD_TIP(), ...BOSTON } : null), tip = $('tip');
     if (!p) { tip.hidden = true; return; }
     const b = wrap.getBoundingClientRect(), s = svg.getBoundingClientRect();
     tip.textContent = p.n; tip.hidden = false;
     tip.style.left = (s.left - b.left + (p.x - vb.x) / vb.w * s.width) + 'px'; tip.style.top = (s.top - b.top + (p.y - vb.y) / vb.h * s.height) + 'px';
   }
+  const FOLD_TIP = () => `${foldN} places in downtown Boston: select to zoom in`;
+  // the Pip-Boy's key to the map's marks, with how many of each
+  wrap.insertAdjacentHTML('beforeend', `<div class="legend" aria-hidden="true">`
+    + `<span><svg viewBox="-6 -6 12 12"><rect x="-4" y="-4" width="8" height="8" fill="currentColor"/></svg>Sited <b>${locs.filter(l => !l.bos && !l.mm && l.k).length}</b></span>`
+    + `<span><svg viewBox="-6 -6 12 12"><rect x="-3.6" y="-3.6" width="7.2" height="7.2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>Estimated <b>${locs.filter(l => !l.bos && !l.mm && !l.k).length}</b></span>`
+    + `<span><svg viewBox="0 0 556 359"><use href="#mm-flag"/></svg>Minutemen <b>${mmList.length}</b></span>`
+    + `<span><svg viewBox="0 0 100 100"><use href="#bos-mark"/></svg>Brotherhood <b>${locs.filter(l => l.bos).length}</b></span>`
+    + `<span><i class="lg-gs"></i>Glowing Sea</span></div>`);
   $('zin').onclick = () => zoomMid(1.6);
   $('zout').onclick = () => zoomMid(1 / 1.6);
   { const c = $('L-bos'), f = () => { svg.classList.toggle('hide-bos', !c.checked); render(); }; c.onchange = f; svg.classList.toggle('hide-bos', !c.checked); }

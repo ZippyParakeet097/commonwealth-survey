@@ -1,3 +1,7 @@
 dist/
 node_modules/
 .DS_Store
+# the games' own screenshots, gathered for matching the Pip-Boy look; only the notes are ours to share
+reference/**/*.jpg
+reference/**/*.png
+reference/**/*.webp

@@ -1,14 +1,19 @@
-import { $, prefs } from './util.js';
+import { $, esc, prefs } from './util.js';
 
-// The Pip-Boy shell: the five tabs and their sub-tabs, the key-hint bar, the settings and keys
-// windows (where the look, Pip-Boy or field survey kit, is chosen), and the keyboard layer. Tabs
-// follow the WAI-ARIA tabs pattern (arrow keys move along a row; moving selects). Single-key
-// shortcuts follow the game where it has one (M for the map, J for data, E to select, WASD to move)
-// and can be switched off, as WCAG 2.1.4 asks; they never fire while you type in a field.
+// The Pip-Boy shell: the five tabs and their sub-tabs, the key-hint bar, the Pip-Boy 3000's title
+// bar, rad gauge and tuning knob, the settings and keys windows (where the look, Pip-Boy or field
+// survey kit, is chosen), and the keyboard layer. Tabs follow the WAI-ARIA tabs pattern (arrow keys
+// move along a row; moving selects). Single-key shortcuts follow the game where it has one (M for
+// the map, J for data, E to select, WASD to move) and can be switched off, as WCAG 2.1.4 asks; they
+// never fire while you type in a field.
 const TINTS = ['green', 'amber', 'blue', 'white'], THEMES = ['auto', 'pip', 'field'];
 const TYPING = 'input:not([type="checkbox"]):not([type="radio"]), select, textarea, [contenteditable]';
 const root = document.documentElement;
 export const keysOn = () => root.dataset.keys !== 'off';
+const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const pad = n => String(n).padStart(2, '0');
+// the Pip-Boy's clock, as Fallout 3 prints it (08.17.77, 11:44), today's date in 2287
+const clock = d => `${pad(d.getMonth() + 1)}.${pad(d.getDate())}.87, ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
 // one row of tabs; `onChange(tab, changed)` runs after each selection
 function tabRow(list, onChange) {
@@ -35,9 +40,10 @@ function tabRow(list, onChange) {
 export function createPipBoy() {
   const listeners = [], themeListeners = [];
   const subRows = new Map();  // main panel id → its sub-tab row
+  const screen = document.querySelector('.screen');
   const main = tabRow($('tabs'), (t, changed) => {
-    if (changed) window.scrollTo(0, 0);
-    hints(); listeners.forEach(f => f(t.id.replace('tab-', '')));
+    if (changed) { window.scrollTo(0, 0); flick(); }
+    hints(); titleBar(); listeners.forEach(f => f(t.id.replace('tab-', '')));
   });
   document.querySelectorAll('[role="tabpanel"] > .subtabs').forEach(list => subRows.set(list.parentElement.id, tabRow(list, () => hints())));
   const panel = () => main.panelOf(main.cur);
@@ -58,13 +64,31 @@ export function createPipBoy() {
     const H = on ? [
       [['1', '5'], 'Tabs', '–'], ...(sub ? [[['A', 'D'], 'Sub-tabs']] : []), ...(list ? [[['W', 'S'], 'List']] : []),
       ...(id === 'map' ? [[['W', 'A', 'S', 'D'], 'Move crosshair', '', true], [['+', '−'], 'Zoom', '', true]] : []),
-      [['E'], 'Select'], [['?'], 'Keys'],
+      [['E'], 'Select'], [['?'], 'Keys', '', false, 'help'],
     ] : [
       [['Tab'], 'Next control'], [['←', '→'], 'Tabs'], ...(list ? [[['↑', '↓'], 'List']] : []),
       ...(id === 'map' ? [[['←', '↑', '↓', '→'], 'Move crosshair', '', true]] : []), [['Enter'], 'Select'],
     ];
-    $('hints').innerHTML = H.map(([keys, label, join, opt]) => `<li${opt ? ' class="opt"' : ''}>${keys.map(k => `<kbd>${k}</kbd>`).join(join || ' ')}<span>${label}</span></li>`).join('');
+    $('hints').innerHTML = H.map(([keys, label, join, opt, cls]) => `<li${opt || cls ? ` class="${[opt && 'opt', cls].filter(Boolean).join(' ')}"` : ''}>${keys.map(k => `<kbd>${k}</kbd>`).join(join || ' ')}<span>${label}</span></li>`).join('');
   }
+
+  // ---- the Pip-Boy 3000's title bar: the tab's name, then readout boxes and the clock ----
+  let readouts = () => [];
+  function titleBar() {
+    const t = main.cur;
+    $('pb-title').textContent = t.firstChild.textContent.trim();
+    root.style.setProperty('--knob', main.tabs.indexOf(t));  // the tuning knob turns with the tab
+    $('pb-read').innerHTML = [...readouts(t.id.replace('tab-', '')), ['', clock(new Date())]]
+      .map(([k, v]) => `<span>${k ? `<b>${esc(k)}</b>` : ''}${esc(v)}</span>`).join('');
+  }
+  setInterval(titleBar, 15000);
+  // a changing screen flickers, as the old Pip-Boys did
+  function flick() {
+    if (root.dataset.theme !== 'pip' || root.dataset.fx === 'off' || still()) return;
+    screen.classList.remove('flick'); void screen.offsetWidth; screen.classList.add('flick');
+  }
+  // the head script started the power-on (the Pip-Boy rises into view, its screen flickers on); end it
+  setTimeout(() => root.classList.remove('pb-boot'), 1400);
 
   // ---- settings and keys windows ----
   function opener(dlg) {
@@ -115,6 +139,12 @@ export function createPipBoy() {
     else if (e.key === '?') { e.preventDefault(); openKeys(); }
   });
 
-  hints();
-  return { show, get tab() { return main.cur.id.replace('tab-', ''); }, onTab: f => listeners.push(f), onTheme: f => themeListeners.push(f), hints };
+  hints(); titleBar();
+  return {
+    show, get tab() { return main.cur.id.replace('tab-', ''); }, onTab: f => listeners.push(f), onTheme: f => themeListeners.push(f), hints,
+    // readouts(tab) gives the title bar's boxes as [label, value] pairs; call titleBar() when they change
+    setReadouts(f) { readouts = f; titleBar(); }, titleBar,
+    // the rad gauge, 0 to 10 (× 100 rads)
+    rads(v) { root.style.setProperty('--rad', Math.max(0, Math.min(10, v)).toFixed(2)); },
+  };
 }

@@ -1,13 +1,21 @@
 /* Two looks share one set of tokens: the Pip-Boy (below) and the field survey kit (at the end).
-   The Pip-Boy 3000 Mark IV: one phosphor colour on a dark screen. Tabs across the top (in the game's
-   own slot order, so MAP is the fourth), a key-hint bar along the bottom, and every shade derived from
-   the one colour the reader picks. Shades are mixes of that colour with black, so contrast is the same
-   for every tint; scripts/check-contrast.mjs checks each text and control pair against WCAG 2.2 AA. */
+   The Pip-Boy is the 3000 of Fallout 3 and New Vegas: one phosphor colour on a lit green-black screen,
+   set in the casing on your arm, with the five tabs (in Fallout 4's slot order, so MAP is the fourth)
+   as the lamp buttons under the screen. Every shade derives from the one colour the reader picks.
+   Shades are mixes of that colour with black, so contrast is the same for every tint;
+   scripts/check-contrast.mjs checks each text and control pair against WCAG 2.2 AA.
+   reference/pipboy-3000/NOTES.md has what the look is matched against. */
+@font-face {
+  /* Monofonto, the games' Pip-Boy face, has no web licence; Survey Mono stands in (scripts/make-font.py) */
+  font-family: "Survey Mono"; src: url(../assets/fonts/survey-mono.woff2) format("woff2");
+  font-weight: 400 800; font-style: normal; font-display: swap;
+}
 :root {
   --c: #1aff80;  /* the Pip-Boy colour; html[data-tint] sets it */
-  --bg: color-mix(in srgb, var(--c) 3.5%, #000);     /* the screen */
-  --bg2: color-mix(in srgb, var(--c) 7.5%, #000);    /* panels, cards, dialogs */
-  --land: color-mix(in srgb, var(--c) 12%, #000);    /* land on the maps */
+  --bg: color-mix(in srgb, var(--c) 6%, #000);       /* the screen */
+  --glass: color-mix(in srgb, var(--c) 11%, #000);   /* the lit middle of the Pip-Boy's glass, its brightest ground */
+  --bg2: color-mix(in srgb, var(--c) 9%, #000);      /* panels, cards, dialogs */
+  --land: color-mix(in srgb, var(--c) 14%, #000);    /* land on the maps */
   --hover: color-mix(in srgb, var(--c) 17%, #000);   /* a row or button under the pointer */
   --faint: color-mix(in srgb, var(--c) 28%, #000);   /* rules and card edges: decoration only */
   --line: color-mix(in srgb, var(--c) 55%, #000);    /* edges of controls: at least 3:1 */
@@ -17,11 +25,11 @@
 
   /* map and figure tokens, all from the one colour; layers differ by line style and texture, not hue */
   --paper: var(--bg); --sea: var(--bg); --water: var(--bg); --wet: var(--text2);
-  --coast: color-mix(in srgb, var(--c) 62%, #000); --stream: color-mix(in srgb, var(--c) 42%, #000);
+  --coast: color-mix(in srgb, var(--c) 58%, #000); --stream: color-mix(in srgb, var(--c) 32%, #000);
   --rule: color-mix(in srgb, var(--c) 30%, #000); --ink: var(--c); --muted: var(--text2);
   --loc: var(--c); --unm: var(--text2); --bos: var(--c); --bos-fill: color-mix(in srgb, var(--c) 16%, transparent);
-  --fp: transparent; --fpline: var(--c); --panel: var(--bg2);
-  --gs: var(--c); --gs-fill: color-mix(in srgb, var(--c) 5%, transparent); --gs-hatch: color-mix(in srgb, var(--c) 60%, #000);
+  --fp: transparent; --fpline: color-mix(in srgb, var(--c) 62%, #000); --panel: var(--bg2);
+  --gs: var(--c); --gs-fill: color-mix(in srgb, var(--c) 5%, transparent); --gs-hatch: color-mix(in srgb, var(--c) 45%, #000);
   --site: color-mix(in srgb, var(--c) 10%, transparent);
   --grass: color-mix(in srgb, var(--c) 17%, #000); --dirt: color-mix(in srgb, var(--c) 34%, #000); --stand: color-mix(in srgb, var(--c) 21%, #000);
   --monster: var(--c); --bldg: color-mix(in srgb, var(--c) 15%, #000); --street: color-mix(in srgb, var(--c) 25%, #000);
@@ -29,20 +37,21 @@
   --meas: var(--c); --nw: var(--c); --halo: var(--bg); --pin: var(--ink);
   --mm-bg: var(--bg); --mm-fg: var(--c);  /* the Minutemen flag */
 
-  --f-ui: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --f-mono: "Share Tech Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --f-ui: "Survey Mono", Inconsolata, ui-monospace, "SF Mono", Menlo, monospace;
+  --f-mono: var(--f-ui);
   --f-map: var(--f-ui); --f-pen: var(--f-mono);
   --top-h: 116px; --bot-h: 52px;
   color-scheme: dark;
 }
-html[data-tint="green"] { --c: #1aff80; }   /* Fallout 4 default */
-html[data-tint="amber"] { --c: #ffb642; }   /* Fallout: New Vegas */
+/* the four colours Fallout 3 and New Vegas offer (FalloutPrefs.ini packs green as 0x1AFF80FF, amber as 0xFFB642FF) */
+html[data-tint="green"] { --c: #1aff80; }   /* Fallout 3's default */
+html[data-tint="amber"] { --c: #ffb642; }   /* New Vegas's default */
 html[data-tint="blue"]  { --c: #2ecfff; }
-html[data-tint="white"] { --c: #e4ece6; }
+html[data-tint="white"] { --c: #c0ffff; }
 @supports not (color: color-mix(in srgb, red 50%, blue)) {
-  :root, html[data-tint] { --c: #1aff80; --bg: #010904; --bg2: #02130a; --land: #031f0f; --hover: #042b16; --faint: #074824; --line: #0e8c46; --text2: #13bd5f;
-    --body: #16db6e; --glow: rgba(26,255,128,.45); --coast: #109e4f; --stream: #0b6b36; --rule: #084d26; --grass: #042b16; --dirt: #09572b; --stand: #05361b;
-    --bldg: #042613; --street: #064020; --gs-hatch: #0f994d; --site: rgba(26,255,128,.1); --gs-fill: rgba(26,255,128,.05); --bos-fill: rgba(26,255,128,.16);
+  :root, html[data-tint] { --c: #1aff80; --bg: #020f08; --glass: #031c0e; --bg2: #02170c; --land: #042412; --hover: #042b16; --faint: #074824; --line: #0e8c46; --text2: #13bd5f;
+    --body: #16db6e; --glow: rgba(26,255,128,.45); --coast: #0f944a; --stream: #085229; --fpline: #109e4f; --rule: #084d26; --grass: #042b16; --dirt: #09572b; --stand: #05361b;
+    --bldg: #042613; --street: #064020; --gs-hatch: #0c733a; --site: rgba(26,255,128,.1); --gs-fill: rgba(26,255,128,.05); --bos-fill: rgba(26,255,128,.16);
     --grid: rgba(26,255,128,.26); --grid-major: rgba(26,255,128,.44); }
 }
 
@@ -273,6 +282,352 @@ legend { padding: 0 6px; font-weight: 700; letter-spacing: .1em; text-transform:
 .dlg .small { color: var(--text2); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+/* ======== The Pip-Boy 3000 ========
+   Fallout 3 and New Vegas: the survey on the Pip-Boy on your arm. The casing is drawn round the
+   screen: the rad gauge, the "Pip-Boy" badge, the model plate and the tuning knob on the left, the
+   brass thumbwheel, the bezel, the grip on the right, and under the screen the plate whose five lamp
+   buttons are the tabs, lit for the open one. On the glass, as in the games: a bracketed title bar
+   across the top (the tab's name, then readout boxes), the prompts under it at the right, and the
+   sub-tabs along the foot, joined by a rule that turns up at both ends, the open one boxed. A list's
+   highlighted row is boxed too. Below 900 px wide or 620 px tall the casing folds away, the screen
+   fills the page and the lamp plate stays along the bottom. The pieces the field kit doesn't use are
+   hidden for it here. */
+.pb, .pb-title, .pb-read, .dash, .tools .btn kbd, .legend, .sw-square { display: none; }
+html[data-theme="pip"] {
+  --metal: #38382b; --metal-hi: #525140; --metal-lo: #1e1e17;   /* olive drab, worn dark */
+  --chip: #8d958f;                                              /* paint worn back to bare metal */
+  --bezel: #1b1a15;                                             /* the bezel */
+  --paint: #dccb85; --paint-on: #f2e29c;                        /* the lamp labels' paint, and the open tab's (scripts/check-contrast.mjs) */
+  --plate-hi: #4b4935; --plate: #3d3b2a; --plate-lo: #2e2d1f;   /* the lamp plate, lit from above */
+  --pb-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 -.22'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  --pb-grime: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .05 0 0 0 0 .05 0 0 0 0 .02 0 0 0 1.4 -.55'/%3E%3C/filter%3E%3Crect width='420' height='420' filter='url(%23g)'/%3E%3C/svg%3E");
+  /* paint worn through to bare metal: the brightest specks of a fine noise, in blue-grey */
+  --pb-chips: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.08 .15' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .53 0 0 0 0 .52 7 0 0 0 -5.45'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23c)'/%3E%3C/svg%3E");
+  --pb-metal: var(--pb-noise), var(--pb-chips), var(--pb-grime), linear-gradient(175deg, var(--metal-hi), var(--metal) 32%, #2f2f25 70%, var(--metal-lo));
+  --mm-full: none; --mm-pennant: inline;  /* the Minutemen flag becomes a pennant (index.html) */
+  /* smudges on the glass, as on the games' screens */
+  --pb-smudge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='500' preserveAspectRatio='none'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .009' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .26 0 0 0 -.15'/%3E%3C/filter%3E%3Crect width='800' height='500' filter='url(%23s)'/%3E%3C/svg%3E");
+}
+html[data-theme="pip"] body::after { display: none; }
+html[data-theme="pip"] :is(.pb-title, .pb-read) { display: flex; }
+html[data-theme="pip"] .dash { display: block; }
+html[data-theme="pip"] #open-keys2 { display: none; }
+html[data-theme="pip"] .kicker { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---- the title bar: the tab's name in a bracket, then boxes closed on the right (┐) ---- */
+html[data-theme="pip"] .brand { display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 0; min-width: 0; }
+html[data-theme="pip"] .pb-title { position: relative; flex: none; margin: 0 .45em 0 1.85em; padding-top: .08em; font: 800 1.42rem/1 var(--f-ui); letter-spacing: .32em; margin-right: .1em; }
+html[data-theme="pip"] .pb-title::before { content: ""; position: absolute; right: calc(100% + .55em); top: .55em; width: 1.2em; height: 1.4em; border: solid var(--c); border-width: 2px 0 0 2px; }
+html[data-theme="pip"] :is(.brand h1, .pb-read span) { margin: .18em 0 0 .55em; padding: .42em .7em .32em; border: solid var(--c); border-width: 2px 2px 0 0;
+  font: 600 1rem/1 var(--f-ui); letter-spacing: .02em; text-transform: none; white-space: nowrap; }
+html[data-theme="pip"] .brand h1 { flex: 1 1 auto; min-width: 4em; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+html[data-theme="pip"] .pb-read { flex: none; margin: 0; padding: 0; }
+html[data-theme="pip"] .pb-read span { display: flex; gap: 1.4em; justify-content: space-between; font-variant-numeric: tabular-nums; }
+html[data-theme="pip"] .pb-read b { font-weight: inherit; }
+
+/* ---- prompts under the title bar, label first and key after, as the games print them ---- */
+html[data-theme="pip"] :is(.pip-top, .pip-bot) { display: contents; }
+html[data-theme="pip"] .hints { justify-content: flex-end; gap: 2px 18px; font-size: .9rem; color: var(--text2); }
+html[data-theme="pip"] .hints li { gap: 4px; }
+html[data-theme="pip"] .hints li span { order: -1; margin-right: 3px; }
+html[data-theme="pip"] kbd { font: 700 .78rem/1 var(--f-ui); background: none; color: var(--c); border: 1px solid var(--line); border-radius: 2px; padding: 2px 4px 1px; min-width: .9em; }
+html[data-theme="pip"] .tools { gap: 2px; }
+html[data-theme="pip"] .tools .btn { border-color: transparent; text-transform: none; letter-spacing: .02em; font-size: .95rem; padding: 0 8px; min-height: 30px; }
+html[data-theme="pip"] .tools .btn:is(:hover, :focus-visible) { border-color: var(--c); background: none; }
+html[data-theme="pip"] .tools .btn kbd { display: inline-block; margin-left: 7px; }
+html[data-theme="pip"] .hints li.help { display: none; }
+
+/* ---- the sub-tabs along the foot of the screen ---- */
+html[data-theme="pip"] :is(.subtabs, main > [role="tabpanel"] > .subrow) { display: flex; flex-wrap: nowrap; align-items: center; gap: 0; box-sizing: border-box;
+  height: 3em; padding: 1em 0 0; margin: 0; }
+html[data-theme="pip"] :is(.subtabs, main > [role="tabpanel"] > .subrow)::before,
+html[data-theme="pip"] :is(.subtabs, main > [role="tabpanel"] > .subrow)::after { content: ""; flex: 1 1 0; min-width: 1em; align-self: flex-start; box-sizing: border-box;
+  height: calc(2em + 1px); margin-top: -1em; border: solid var(--c); border-width: 0 0 2px 2px; }
+html[data-theme="pip"] :is(.subtabs, main > [role="tabpanel"] > .subrow)::after { border-width: 0 2px 2px 0; }
+html[data-theme="pip"] .dash { flex: 1 1 0; min-width: .8em; height: 2px; background: var(--c); }
+html[data-theme="pip"] :is(.subtabs [role="tab"], main > [role="tabpanel"] > .subrow .btn) { flex: none; font: 600 1.02rem/1 var(--f-ui); letter-spacing: .02em; text-transform: none;
+  color: var(--c); background: none; border: 2px solid transparent; border-radius: 0; padding: .38em .65em .3em; min-height: 0; margin: 0; cursor: pointer; }
+html[data-theme="pip"] :is(.subtabs [role="tab"], main > [role="tabpanel"] > .subrow .btn):hover { border-color: var(--faint); background: none; }
+html[data-theme="pip"] :is(.subtabs [role="tab"][aria-selected="true"], main > [role="tabpanel"] > .subrow .btn[aria-current="true"]) { border-color: var(--c); }
+html[data-theme="pip"] :is(.subtabs [role="tab"], main > [role="tabpanel"] > .subrow .btn):focus-visible { outline: 2px dashed var(--c); outline-offset: 3px; }
+/* a tab with no sub-tabs still has the rule along its foot */
+html[data-theme="pip"] main > [role="tabpanel"]:not(:has(> .subtabs, > .subrow))::after { content: ""; order: 3; flex: none; box-sizing: border-box; height: calc(2em + 1px);
+  margin: 0 0 1em; border: solid var(--c); border-width: 0 2px 2px; }
+
+/* ---- the content: each tab fills the glass; its body scrolls inside, the foot stays ---- */
+html[data-theme="pip"] main > [role="tabpanel"] { display: flex; flex-direction: column; min-height: 0; }
+html[data-theme="pip"] main > [role="tabpanel"][hidden] { display: none; }
+html[data-theme="pip"] main > [role="tabpanel"] > :is(.subtabs, .subrow) { order: 2; flex: none; }
+html[data-theme="pip"] .panel-body { order: 1; flex: 1 1 auto; min-width: 0; }
+
+/* text on the glass glows a little, as the games' pre-glowed fonts do */
+html[data-theme="pip"][data-fx="on"] :is(.brand, .hints, .tools, main) { text-shadow: 0 0 .45em var(--glow); }
+html[data-theme="pip"][data-fx="on"] :is(.chip.real, button[aria-pressed="true"], tr:focus-within) { text-shadow: none; }
+
+/* in-screen controls: plain text in a thin box, a solid box when hovered or focused, inverse when on */
+html[data-theme="pip"] :is(.btn, .mapctl button, .seg button) { font: 700 .92rem var(--f-ui); letter-spacing: .02em; text-transform: none; border-color: var(--faint); min-height: 32px; }
+html[data-theme="pip"] :is(.btn, .mapctl button, .seg button):hover { border-color: var(--c); background: var(--hover); }
+html[data-theme="pip"] :is(input[type="text"], input[type="search"], select) { font: 600 1rem var(--f-ui); background: color-mix(in srgb, var(--bg) 70%, transparent); border-color: var(--line); }
+
+/* panels to the right of the map: open boxes, a top rule closed on the right with a tick at the left */
+html[data-theme="pip"] .card { position: relative; border: 0; border-top: 2px solid var(--line); border-right: 2px solid var(--line); background: none; padding: 12px 14px 14px 12px; }
+html[data-theme="pip"] .card::before { content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 12px; background: var(--line); }
+html[data-theme="pip"] .card h2 { font-size: .92rem; letter-spacing: .16em; font-weight: 800; }
+html[data-theme="pip"] .card h2::after { display: none; }
+html[data-theme="pip"] .place-name { font: 800 1.5rem/1.1 var(--f-ui); letter-spacing: .04em; }
+html[data-theme="pip"] .chip { font: 700 .78rem var(--f-ui); letter-spacing: .04em; text-transform: none; padding: 2px 6px; }
+html[data-theme="pip"] dl.kv { font-size: .98rem; row-gap: 3px; }
+html[data-theme="pip"] dl.kv dd.txt { font-family: var(--f-ui); }
+html[data-theme="pip"] .lore, html[data-theme="pip"] .prose { font-weight: 600; }
+
+/* lists: no rules between rows; the highlighted row is boxed, as in the games */
+html[data-theme="pip"] td { border-bottom: 0; }
+html[data-theme="pip"] th { border-bottom: 2px solid var(--line); }
+html[data-theme="pip"] tr[data-go]:hover td { background: none; }
+html[data-theme="pip"] tr[data-go]:hover td:first-child .rowbtn { outline: 1px solid var(--faint); outline-offset: -1px; }
+html[data-theme="pip"] tr:focus-within :is(td, td.q, td.n, .rowbtn) { background: none; color: inherit; }
+html[data-theme="pip"] tr:focus-within td { box-shadow: inset 0 2px 0 var(--c), inset 0 -2px 0 var(--c); }
+html[data-theme="pip"] tr:focus-within td:first-child { box-shadow: inset 2px 2px 0 var(--c), inset 0 -2px 0 var(--c); }
+html[data-theme="pip"] tr:focus-within td:last-child { box-shadow: inset -2px 2px 0 var(--c), inset 0 -2px 0 var(--c); }
+html[data-theme="pip"] tr:focus-within .mmi { outline-color: var(--line); }
+html[data-theme="pip"] .rowbtn { font-weight: 700; }
+html[data-theme="pip"] .facts div { border-top: 2px solid var(--line); border-right: 2px solid var(--line); padding: 6px 10px 2px 2px; }
+html[data-theme="pip"] .facts b { font: 700 1.3rem var(--f-ui); }
+html[data-theme="pip"] .facts span { text-transform: none; letter-spacing: .02em; font-size: .85rem; }
+html[data-theme="pip"] :is(.panel-h h2, h2.ph, .plan-head h3) { font: 800 1.45rem/1.15 var(--f-ui); letter-spacing: .08em; }
+html[data-theme="pip"] .panel-h:has(> p) { display: grid; gap: 10px; margin-bottom: 18px; }  /* a description under its title, as on the Pip-Boy */
+html[data-theme="pip"] :is(.prose h2, .prose h3, .townlist h3) { font-weight: 800; letter-spacing: .12em; }
+html[data-theme="pip"] .townlist li { border-bottom: 0; }
+
+/* the map fills its part of the glass: a faint frame, no box */
+html[data-theme="pip"] .mapwrap { border-color: var(--faint); background: var(--sea); }
+html[data-theme="pip"] :is(.scale, .cursor) { background: color-mix(in srgb, var(--bg) 88%, transparent); border-color: var(--faint); }
+html[data-theme="pip"] .tip { background: var(--bg); border-width: 2px; font-weight: 700; }
+html[data-theme="pip"] .modebar { font-weight: 800; }
+html[data-theme="pip"] .loading { background: var(--glass); font-weight: 700; letter-spacing: .2em; }
+
+/* the map, sorted by brightness for one colour: ground and grid fall back, places come in three
+   strengths by importance, and the selection and labels stay brightest */
+html[data-theme="pip"] #g-grid path:first-child { stroke: color-mix(in srgb, var(--c) 12%, transparent); }
+html[data-theme="pip"] #g-grid path:nth-child(2) { stroke: color-mix(in srgb, var(--c) 24%, transparent); stroke-width: 1px; }
+html[data-theme="pip"] .t-grid { fill: var(--text2); }
+html[data-theme="pip"] #loc-dots .k0 { opacity: .62; }
+html[data-theme="pip"] #loc-dots .k1 { opacity: .85; }
+html[data-theme="pip"] #unm-dots { opacity: .7; }
+html[data-theme="pip"] .t-minor { fill: var(--text2); }
+html[data-theme="pip"] :is(.mmsw, .mmi) { outline: 0; }
+html[data-theme="pip"] .sw-round { display: none; }
+html[data-theme="pip"] .sw-square { display: inline; }
+html[data-theme="pip"] .fold-ring { fill: var(--bg); fill-opacity: .92; stroke: var(--c); stroke-width: 2; }
+html[data-theme="pip"] .fold-n { fill: var(--c); font-family: var(--f-ui) !important; font-weight: 800; }
+html[data-theme="pip"] .fold-s { fill: var(--c); font-family: var(--f-ui) !important; font-weight: 800; letter-spacing: .14em; }
+html[data-theme="pip"] #g-fold { cursor: zoom-in; }
+html[data-theme="pip"] .legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px 14px; position: absolute; right: 10px; bottom: 10px; z-index: 2; max-width: calc(100% - 210px);
+  padding: 5px 10px; background: color-mix(in srgb, var(--bg) 88%, transparent); border: 1px solid var(--faint); font: 600 .8rem/1.2 var(--f-ui); color: var(--text2); pointer-events: none; }
+html[data-theme="pip"] .legend span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+html[data-theme="pip"] .legend b { font-weight: 800; color: var(--c); }
+html[data-theme="pip"] .legend svg { width: 15px; height: 11px; color: var(--c); overflow: visible; }
+html[data-theme="pip"] .legend .lg-gs { width: 15px; height: 10px; border: 1px solid var(--c); background: repeating-linear-gradient(45deg, var(--gs-hatch) 0 1.5px, transparent 1.5px 4px); }
+/* the key needs room: it shows on a map at least 560 px wide */
+html[data-theme="pip"] .mapwrap { container: mapwrap / inline-size; }
+@container mapwrap (max-width: 559.98px) { html[data-theme="pip"] .legend { display: none; } }
+html[data-theme="pip"] .cursor { bottom: 46px; }
+/* a route is a line of dots, as the games join you to your quest marker */
+html[data-theme="pip"] #g-meas > polyline:first-child { stroke-dasharray: 0 10; stroke-width: 9px; }
+html[data-theme="pip"] #g-meas > polyline:nth-child(2) { stroke-dasharray: 0 10; stroke-width: 5px; }
+
+/* dialogs: a message box on the glass */
+html[data-theme="pip"] dialog { background: var(--bg2); border: 2px solid var(--c); box-shadow: 0 0 0 6px var(--bg2), 0 0 0 8px var(--line), 0 10px 40px rgba(0,0,0,.6); }
+html[data-theme="pip"] .dlg-h h2 { font-weight: 800; letter-spacing: .3em; }
+html[data-theme="pip"] legend { font-weight: 800; letter-spacing: .12em; }
+
+/* ---- the lamp buttons: the tabs, under the screen; always orange, whatever the screen's colour ---- */
+html[data-theme="pip"] .tabs { position: relative; z-index: 3; justify-content: center; gap: 0 18px; border: 0; padding: 12px 30px 14px; margin: 0; }
+html[data-theme="pip"] .tabs::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 5px 5px 3px 3px;
+  background: var(--pb-noise), linear-gradient(180deg, var(--plate-hi), var(--plate) 34%, var(--plate-lo) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -2px 0 rgba(0,0,0,.45), inset 2px 0 0 rgba(141,149,143,.28), 0 7px 12px rgba(0,0,0,.55); }
+html[data-theme="pip"] .tabs::after { content: ""; position: absolute; z-index: -2; top: -14px; bottom: calc(-1 * var(--cbm, 22px)); left: -15px; right: -15px; border-radius: 4px 4px 0 0;
+  background: linear-gradient(90deg, #2a2920 0, #6b6851 3px, #4a4835 7px, #23221a 13px, transparent 13px calc(100% - 13px), #23221a calc(100% - 13px), #4a4835 calc(100% - 7px), #6b6851 calc(100% - 3px), #2a2920 100%);
+  box-shadow: 0 6px 10px rgba(0,0,0,.45); }
+html[data-theme="pip"] .tabs [role="tab"] { display: grid; justify-items: center; gap: 7px; min-width: 70px; min-height: 0; padding: 0 4px 2px; margin: 0;
+  font: 800 .82rem/1 var(--f-ui); letter-spacing: .06em; color: var(--paint); background: none; border: 0; text-shadow: 0 1px 0 rgba(0,0,0,.7); }
+html[data-theme="pip"] .tabs [role="tab"]::after { content: ""; width: 34px; height: 34px; border-radius: 50%; border: 4px solid transparent;
+  background: radial-gradient(circle at 46% 40%, #85441c 0, #5c2a10 32%, #34150a 68%, #1d0b05 100%) padding-box,
+    conic-gradient(from 200deg, #d9dbd3, #6f716a 25%, #c9cbc3 50%, #55574f 75%, #d9dbd3) border-box;
+  box-shadow: 0 0 0 2px #1b1a14, inset 0 3px 6px rgba(0,0,0,.65), 0 4px 7px 2px rgba(0,0,0,.4); transition: box-shadow .15s, background .15s; }
+html[data-theme="pip"] .tabs [role="tab"]:hover::after { background: radial-gradient(circle at 46% 40%, #a5561f 0, #73350f 34%, #3d180a 70%, #1d0b05 100%) padding-box,
+    conic-gradient(from 200deg, #d9dbd3, #6f716a 25%, #c9cbc3 50%, #55574f 75%, #d9dbd3) border-box; }
+html[data-theme="pip"] .tabs [role="tab"][aria-selected="true"]::after {
+  background: radial-gradient(circle at 48% 44%, #fffbd2 0 7%, #ffe066 20%, #ffad1f 45%, #e66a00 72%, #8a3300 100%) padding-box,
+    conic-gradient(from 200deg, #e8eae2, #7a7c74 25%, #d6d8cf 50%, #5d5f57 75%, #e8eae2) border-box;
+  box-shadow: 0 0 0 2px #1b1a14, inset 0 -2px 5px rgba(120,40,0,.5), 0 0 14px 5px rgba(255,150,30,.5), 0 0 34px 8px rgba(255,120,0,.22); }
+html[data-theme="pip"] .tabs [role="tab"][aria-selected="true"] { color: var(--paint-on); }
+html[data-theme="pip"] .tabs [role="tab"]:focus-visible { outline: 2px solid var(--paint); outline-offset: 5px; border-radius: 4px; }
+html[data-theme="pip"] .tabs [role="tab"] .hk { display: none; }
+
+/* ======== the casing, where there is room for it ======== */
+@media (min-width: 900px) and (min-height: 620px) {
+  html[data-theme="pip"] body { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; box-sizing: border-box; padding: 12px 16px;
+    background: radial-gradient(ellipse 70% 60% at 50% 45%, #1d1c16, #0b0b09 70%) fixed, #0b0b09; }
+  html[data-theme="pip"] .pb { display: contents; }
+  /* track sizes: the left panel, thumbwheel, bezel, right grip; the margins above, below and under the plate; the bezel's ring */
+  html[data-theme="pip"] .screen { --cl: 168px; --cw: 30px; --cb: 44px; --cr: 54px; --ct: 14px; --cbt: 36px; --cbb: 34px; --cbm: 22px; --ring: 18px;
+    position: relative; max-width: 1760px; height: 100%; min-height: 0; margin: 0 auto;
+    grid-template-columns: [case-l] var(--cl) [wheel] var(--cw) [bez-l] var(--cb) [scr] minmax(0, 1fr) [scr-b] auto [bez-r] var(--cb) [case-r] var(--cr) [end];
+    grid-template-rows: [top] var(--ct) [bez-t] var(--cbt) [head] auto [prompt] auto [body] minmax(0, 1fr) [bez-b] var(--cbb) [plate] auto [bottom] var(--cbm) [end];
+    border-radius: 40px 40px 30px 30px; background: var(--pb-metal);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(141,149,143,.28), inset 0 -3px 0 rgba(0,0,0,.5), inset 0 0 40px rgba(0,0,0,.35), 0 18px 40px rgba(0,0,0,.6); }
+  html[data-theme="pip"] .brand { grid-area: head / scr / head / bez-r; }
+  html[data-theme="pip"] .hints { grid-area: prompt / scr; justify-self: end; margin: 8px 0 0; }
+  html[data-theme="pip"] .tools { grid-area: prompt / scr-b; margin: 8px 0 0 10px; }
+  html[data-theme="pip"] main { grid-area: body / scr / body / bez-r; min-height: 0; min-width: 0; padding: 0; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); position: relative; z-index: 1; }
+  html[data-theme="pip"] .panel-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 10px 26px 2px; scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+    -webkit-mask-image: linear-gradient(#000 calc(100% - 26px), transparent); mask-image: linear-gradient(#000 calc(100% - 26px), transparent); }  /* text fades as it runs under the foot */
+  html[data-theme="pip"] .tabs { grid-area: plate / scr / plate / bez-r; justify-self: center; align-self: start; margin-top: -24px; }
+  html[data-theme="pip"] :is(.brand, .hints, .tools) { position: relative; z-index: 1; }
+
+  /* the map tab: map and tools side by side, filling the glass */
+  html[data-theme="pip"] #p-map .panel-body { overflow: hidden; padding: 10px 0 4px; display: grid; -webkit-mask-image: none; mask-image: none; }
+  html[data-theme="pip"] #p-map .work { grid-template-columns: minmax(0, 1fr) clamp(270px, 26vw, 360px); height: 100%; min-height: 0; gap: 18px; }
+  html[data-theme="pip"] .mapwrap { position: relative; top: 0; height: 100%; min-height: 0; }
+  html[data-theme="pip"] aside { height: 100%; max-height: none; overflow-y: auto; padding-right: 8px; }
+  html[data-theme="pip"] .mmtbl { max-height: none; }
+
+  /* the bezel and the glass; the glass is lit in the middle and falls off to the rim */
+  html[data-theme="pip"] .pb-glass { grid-row: bez-t / plate; grid-column: bez-l / case-r; position: relative; border: var(--ring) solid var(--bezel); border-radius: 48px / 56px;
+    background: radial-gradient(ellipse 80% 72% at 50% 46%, var(--glass), color-mix(in srgb, var(--c) 7%, #000) 62%, color-mix(in srgb, var(--c) 3%, #000) 100%);
+    box-shadow: inset 0 0 0 2px #050504, inset 0 0 70px 10px rgba(0,0,0,.6), 0 0 0 2px #0e0e0b, 0 0 0 4px rgba(141,149,143,.22), 0 -2px 0 4px rgba(255,255,255,.07); }
+  html[data-theme="pip"] .pb-glass::before { content: ""; position: absolute; left: 9%; right: 9%; top: -31px; height: 14px; border-radius: 9px 9px 0 0;
+    background: var(--pb-noise), linear-gradient(180deg, #67644c, #45432f 60%, #2a2920); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 -1px 0 rgba(0,0,0,.4); }
+  html[data-theme="pip"] .pb-glass::after { content: ""; position: absolute; left: 30%; right: 30%; top: -37px; height: 9px; border-radius: 4px 4px 0 0;
+    background: linear-gradient(90deg, #5d5a43 0 22%, transparent 22% 78%, #5d5a43 78%), none; box-shadow: none;
+    -webkit-mask: linear-gradient(90deg, #000 0 22%, transparent 22% 78%, #000 78%); mask: linear-gradient(90deg, #000 0 22%, transparent 22% 78%, #000 78%); }
+  html[data-theme="pip"][data-fx="on"] .screen::after { content: ""; grid-row: bez-t / plate; grid-column: bez-l / case-r; margin: var(--ring); border-radius: 30px / 38px; z-index: 5; pointer-events: none;
+    background: radial-gradient(ellipse 55% 34% at 76% 10%, rgba(255,255,255,.075), transparent 72%), radial-gradient(ellipse 120% 100% at 50% 50%, transparent 58%, rgba(0,0,0,.42) 100%),
+      repeating-linear-gradient(180deg, rgba(0,0,0,.26) 0 1px, transparent 1px 3px), var(--pb-smudge) center / cover; }
+  html[data-theme="pip"][data-fx="on"] .screen::before { content: ""; grid-row: bez-t / plate; grid-column: bez-l / case-r; margin: var(--ring); border-radius: 30px / 38px; z-index: 5; pointer-events: none;
+    background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--c) 7%, transparent) 50%, transparent) 0 -30% / 100% 22% no-repeat; animation: pb-roll 9s linear infinite; }
+
+  /* the left panel: rad gauge, badge, ribs, model plate, tuning knob */
+  /* the left panel is a raised block on the housing, as on the device */
+  html[data-theme="pip"] .pb-left { grid-row: top / end; grid-column: case-l / wheel; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; gap: 8px;
+    margin: 10px 4px 12px 10px; padding: 14px 6px 18px; min-height: 0; border-radius: 30px 16px 16px 26px; background: var(--pb-noise), var(--pb-chips), linear-gradient(170deg, #59584a, #3f3e30 40%, #2c2c22);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.16), inset 2px 0 0 rgba(141,149,143,.2), inset 0 -3px 0 rgba(0,0,0,.45), 4px 6px 12px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.4); }
+  html[data-theme="pip"] .pb-rad { width: 112px; height: 112px; flex: none; filter: drop-shadow(0 4px 5px rgba(0,0,0,.55)); }
+  html[data-theme="pip"] .pb-needle { transform-box: view-box; transform-origin: 51px 62px; transform: rotate(calc((80 - 16 * var(--rad, .3)) * 1deg)); transition: transform 1.1s cubic-bezier(.3, 1.5, .5, 1); animation: pb-twitch 3.4s ease-in-out infinite; }
+  html[data-theme="pip"] .pb-mid { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+  html[data-theme="pip"] .pb-badge { margin: 0 0 2px; font: 400 1.62rem/1 Courgette, "Brush Script MT", cursive; color: #d9dad0; letter-spacing: .01em; transform: skewX(-6deg);
+    text-shadow: 0 -1px 0 rgba(255,255,255,.6), 0 1px 0 #15150f, 0 2px 0 #15150f, 0 3px 5px rgba(0,0,0,.65); }
+  /* four deep ribs: each lit along its top edge, shadowed beneath */
+  html[data-theme="pip"] .pb-ribs { display: grid; gap: 5px; width: 100%; max-width: 146px; padding: 6px 7px; box-sizing: border-box; border-radius: 4px;
+    background: #15140e; box-shadow: inset 0 2px 5px rgba(0,0,0,.9), 0 1px 0 rgba(255,255,255,.12); }
+  html[data-theme="pip"] .pb-ribs i { height: 15px; border-radius: 3px; background: linear-gradient(180deg, #8a8669 0, #5f5c45 18%, #4a4834 55%, #2c2b1f 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 2px 3px rgba(0,0,0,.7); }
+  html[data-theme="pip"] .pb-model { display: flex; align-items: baseline; gap: 9px; margin: 0; padding: 5px 12px 4px; border-radius: 6px; background: #22211a;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.8), 0 1px 0 rgba(255,255,255,.14); font: 400 .9rem/1 Arial, Helvetica, sans-serif; color: #d6d2c2; white-space: nowrap; }
+  html[data-theme="pip"] .pb-model sup { font-size: .62em; vertical-align: .62em; line-height: 0; margin-left: 1px; }
+  html[data-theme="pip"] .pb-model i { font-style: normal; font-size: .7em; color: #a9a593; }
+  html[data-theme="pip"] .pb-knob { width: 122px; height: 122px; flex: none; filter: drop-shadow(0 5px 6px rgba(0,0,0,.6)); }
+  html[data-theme="pip"] .pb-knob-cap { transform-box: view-box; transform-origin: 50px 51px; transform: rotate(calc(var(--knob, 3) * 34deg - 70deg)); transition: transform .45s cubic-bezier(.3, 1.4, .5, 1); }
+  /* the thumbwheel: a ribbed brass roller in a chrome slot */
+  html[data-theme="pip"] .pb-wheel { grid-row: head / bez-b; grid-column: wheel; align-self: center; justify-self: center; position: relative; width: 26px; height: min(46%, 230px); min-height: 120px;
+    border-radius: 8px; background: linear-gradient(90deg, #474940, #c7c9c0 30%, #77796f 60%, #2f302a); box-shadow: 0 0 0 2px #1b1a14, 0 6px 8px rgba(0,0,0,.5); }
+  html[data-theme="pip"] .pb-wheel::before { content: ""; position: absolute; left: 50%; top: -11px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #d5d6cd, #55574f 70%); box-shadow: 0 1px 2px #000; }
+  html[data-theme="pip"] .pb-wheel i { position: absolute; inset: 6px 5px; border-radius: 4px; box-shadow: inset 0 0 0 1px #111, inset 0 0 8px rgba(0,0,0,.8);
+    background: linear-gradient(90deg, rgba(0,0,0,.55), transparent 35%, transparent 60%, rgba(0,0,0,.6)), repeating-linear-gradient(180deg, #c9a75a 0 3px, #8a6b2a 3px 6px, #4d3a14 6px 8px); }
+  /* the grip on the right */
+  html[data-theme="pip"] .pb-right { grid-row: top / end; grid-column: case-r / end; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 20px 10px 30px 0; }
+  html[data-theme="pip"] .pb-grip { width: 34px; height: 30%; max-height: 180px; border-radius: 16px;
+    background: repeating-linear-gradient(180deg, #55523c 0 9px, #26251a 9px 14px, #6a6750 14px 16px), #3b392b; box-shadow: inset 0 0 0 1px rgba(0,0,0,.5), 2px 0 0 rgba(141,149,143,.3), 0 4px 8px rgba(0,0,0,.4); }
+  html[data-theme="pip"] :is(.pb-right, .pb-screws) svg { width: 18px; height: 18px; flex: none; filter: drop-shadow(0 1px 1px rgba(0,0,0,.7)); }
+  html[data-theme="pip"] .pb-screws { grid-row: top / end; grid-column: case-l / end; position: relative; pointer-events: none; }
+  html[data-theme="pip"] .pb-screws svg { position: absolute; }
+  html[data-theme="pip"] .pb-screws svg:nth-child(1) { left: calc(var(--cl) + 7px); top: calc(var(--ct) + 8px); }
+  html[data-theme="pip"] .pb-screws svg:nth-child(2) { left: calc(var(--cl) + 7px); bottom: calc(var(--cbm) + 8px); }
+  html[data-theme="pip"] .pb-screws svg:nth-child(3) { right: calc(var(--cr) + 10px); top: calc(var(--ct) + 8px); }
+  html[data-theme="pip"] .pb-screws svg:nth-child(4) { right: calc(var(--cr) + 10px); bottom: calc(var(--cbm) + 8px); }
+  /* the vents under the lamp plate */
+  html[data-theme="pip"].pb-boot .screen { animation: pb-raise .65s cubic-bezier(.2, .85, .3, 1) both; }
+  html[data-theme="pip"] .pb-vents { grid-row: plate / end; grid-column: scr / bez-r; justify-self: center; align-self: end; width: 260px; height: 30px; margin-bottom: 2px;
+    background: repeating-linear-gradient(90deg, transparent 0 22px, #0f0f0b 22px 34px, rgba(141,149,143,.25) 34px 35px, transparent 35px 66px); background-position: 16px 0;
+    mask: linear-gradient(transparent, #000 30%); }
+
+  /* laptops and small windows: a slimmer casing, so the screen keeps its room */
+  @media (max-width: 1279.98px), (max-height: 799.98px) {
+    html[data-theme="pip"] body { padding: 8px 12px; }
+    html[data-theme="pip"] .screen { --cl: 128px; --cw: 24px; --cb: 30px; --cr: 40px; --ct: 8px; --cbt: 22px; --cbb: 20px; --cbm: 12px; --ring: 13px; border-radius: 30px 30px 22px 22px; }
+    html[data-theme="pip"] .pb-glass { border-radius: 38px / 44px; }
+    html[data-theme="pip"][data-fx="on"] .screen::before, html[data-theme="pip"][data-fx="on"] .screen::after { border-radius: 25px / 31px; }
+    html[data-theme="pip"] .pb-glass::before { top: -21px; height: 10px; }
+    html[data-theme="pip"] .pb-glass::after { top: -25px; height: 6px; }
+    html[data-theme="pip"] .pb-left { margin: 6px 2px 8px 6px; padding: 10px 4px 12px; border-radius: 22px 12px 12px 20px; }
+    html[data-theme="pip"] .pb-rad { width: 86px; height: 86px; }
+    html[data-theme="pip"] .pb-mid { gap: 9px; }
+    html[data-theme="pip"] .pb-badge { font-size: 1.28rem; }
+    html[data-theme="pip"] .pb-ribs { max-width: 108px; gap: 4px; padding: 5px 6px; }
+    html[data-theme="pip"] .pb-ribs i { height: 11px; }
+    html[data-theme="pip"] .pb-model { font-size: .74rem; padding: 4px 9px 3px; gap: 6px; }
+    html[data-theme="pip"] .pb-knob { width: 94px; height: 94px; }
+    html[data-theme="pip"] .pb-wheel { width: 21px; min-height: 100px; }
+    html[data-theme="pip"] .pb-right { gap: 16px; padding: 14px 6px 20px 0; }
+    html[data-theme="pip"] .pb-grip { width: 26px; }
+    html[data-theme="pip"] .tabs { margin-top: -16px; padding: 9px 22px 10px; gap: 0 12px; }
+    html[data-theme="pip"] .tabs [role="tab"] { min-width: 58px; gap: 5px; font-size: .74rem; }
+    html[data-theme="pip"] .tabs [role="tab"]::after { width: 28px; height: 28px; border-width: 3px; }
+    html[data-theme="pip"] .pb-vents { height: 16px; }
+  }
+}
+
+/* phones and short windows: the screen alone, the lamp plate along the bottom of the window */
+@media (max-width: 899.98px), (max-height: 619.98px) {
+  html[data-theme="pip"] body { background: radial-gradient(ellipse 120% 80% at 50% 40%, var(--glass), var(--bg) 80%) fixed, var(--bg); }
+  html[data-theme="pip"] .screen { display: flex; flex-direction: column; min-height: 100vh; }
+  html[data-theme="pip"] .brand { order: 1; } html[data-theme="pip"] .hints { order: 2; } html[data-theme="pip"] .tools { order: 3; }
+  html[data-theme="pip"] main { order: 4; flex: 1 0 auto; } html[data-theme="pip"] .tabs { order: 5; }
+  html[data-theme="pip"] .brand { padding-top: max(12px, env(safe-area-inset-top, 0px)); }
+  html[data-theme="pip"] .hints { margin: 8px 0 0; }
+  html[data-theme="pip"] .tools { justify-content: flex-end; margin: 4px 0 0; }
+  html[data-theme="pip"] main { padding-bottom: 12px; }
+  html[data-theme="pip"] main > [role="tabpanel"] > :is(.subtabs, .subrow) { order: 0; margin-bottom: 8px; }
+  /* one line, as in the game: a row too long for the screen scrolls sideways */
+  html[data-theme="pip"] :is(.subtabs, main > [role="tabpanel"] > .subrow) { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; height: auto; padding-bottom: 6px; }
+  html[data-theme="pip"] :is(.subtabs, main > [role="tabpanel"] > .subrow)::-webkit-scrollbar { display: none; }
+  html[data-theme="pip"] .tabs { position: sticky; bottom: 0; z-index: 40; gap: 0 4px; justify-content: space-around; padding: 10px 8px max(10px, env(safe-area-inset-bottom, 0px)); margin: 0 -16px; }
+  html[data-theme="pip"] .tabs::before { border-radius: 0; }
+  html[data-theme="pip"] .tabs::after { display: none; }  /* the plate's rails would stick out past the screen's edges */
+  html[data-theme="pip"] .tabs [role="tab"] { min-width: 0; font-size: .74rem; gap: 6px; }
+  html[data-theme="pip"] .tabs [role="tab"]::after { width: 26px; height: 26px; border-width: 3px; }
+  html[data-theme="pip"] .pb-title { font-size: 1.15rem; letter-spacing: .2em; }
+}
+@media (max-width: 560px) {
+  html[data-theme="pip"] .legend, html[data-theme="pip"] .hints { display: none; }
+}
+/* as the screen narrows, the title bar keeps the tab's name, the title and the clock, and lets readouts go from the left */
+html[data-theme="pip"] .screen { container: pipboy / inline-size; }
+@container pipboy (max-width: 1180px) { html[data-theme="pip"] .pb-read span:not(:nth-last-child(-n+3)) { display: none; } }
+@container pipboy (max-width: 940px) { html[data-theme="pip"] .pb-read span:not(:nth-last-child(-n+2)) { display: none; } html[data-theme="pip"] .hints li.opt { display: none; } }
+@container pipboy (max-width: 600px) { html[data-theme="pip"] .pb-read span:not(:last-child) { display: none; } }
+@container pipboy (max-width: 420px) { html[data-theme="pip"] .pb-read { display: none; } }
+
+@keyframes pb-roll { to { background-position: 0 130%; } }
+@keyframes pb-twitch { 0%, 100% { rotate: 0deg; } 18% { rotate: -2.5deg; } 21% { rotate: 1deg; } 47% { rotate: -1deg; } 62% { rotate: 2.2deg; } 66% { rotate: -.5deg; } 84% { rotate: 1.4deg; } }
+@keyframes pb-flick { 0% { opacity: .35; filter: brightness(1.8); } 25% { opacity: 1; } 40% { opacity: .7; } 55%, 100% { opacity: 1; filter: none; } }
+@keyframes pb-raise { from { transform: translateY(55%) rotate(3deg); } to { transform: none; } }
+@keyframes pb-on { 0% { opacity: 0; } 30% { opacity: .9; } 40% { opacity: .2; } 60%, 100% { opacity: 1; } }
+html[data-theme="pip"] .screen.flick :is(main, .brand) { animation: pb-flick .3s steps(5); }
+html[data-theme="pip"].pb-boot :is(main, .brand, .hints, .tools) { animation: pb-on .5s .6s steps(6) both; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="pip"] :is(.screen, .pb-needle, main, .brand, .hints, .tools), html[data-theme="pip"] .screen::before { animation: none !important; }
+}
+@media (prefers-contrast: more) {
+  html[data-theme="pip"][data-fx="on"] .screen::after, html[data-theme="pip"][data-fx="on"] .screen::before { display: none; }
+}
+@media (forced-colors: active) {
+  html[data-theme="pip"] .pb, html[data-theme="pip"] .tabs::before, html[data-theme="pip"] .screen::before, html[data-theme="pip"] .screen::after { display: none; }
+  html[data-theme="pip"] .tabs [role="tab"]::after { forced-color-adjust: none; }
+  html[data-theme="pip"] .tabs [role="tab"][aria-selected="true"] { outline: 2px solid Highlight; }
+}
 
 /* ======== The field survey kit ========
    An Army Map Service sheet carried around the Commonwealth: khaki paper, olive drab, slate water, a

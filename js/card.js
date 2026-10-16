@@ -11,6 +11,7 @@ export function createCard({ map, grid, byId, D }) {
   const CRATER = { 'Crater of Atom': `Nuclear crater · ~${(A.kt / 1000).toFixed(0)} Mt`, 'Cambridge crater': `Nuclear crater · ~${C.kt} kt` };
   const gameArea = rings(D.base.footprint);
   let cur = null;  // {place} or {pin}
+  const listeners = [];
 
   // distances to the three hubs, leaving out the one being shown
   const hubs = p => [[sanct, true], [dc], [castle]].filter(([h]) => h !== p).map(([h, dir]) => `<dt>${esc(h.n)}</dt><dd>${fmtDist(km(h, p))}${dir ? ' ' + compass(h, p) : ''}</dd>`).join('');
@@ -51,13 +52,15 @@ export function createCard({ map, grid, byId, D }) {
     select(p, zoom) {
       cur = { place: p }; map.sel = p; map.setPin(null);
       if (zoom) map.focus(p);
-      showPlace(p); setHash('place=' + encodeURIComponent(p.id));
+      showPlace(p); setHash('place=' + encodeURIComponent(p.id)); listeners.forEach(f => f(cur));
     },
     pin(pt) {
       cur = { pin: pt }; map.sel = null; map.setPin(pt);
-      showPin(pt); const [lat, lon] = unproject(pt.x, pt.y); setHash(`pin=${lat.toFixed(5)},${lon.toFixed(5)}`);
+      showPin(pt); const [lat, lon] = unproject(pt.x, pt.y); setHash(`pin=${lat.toFixed(5)},${lon.toFixed(5)}`); listeners.forEach(f => f(cur));
     },
     refresh() { if (cur?.place) showPlace(cur.place); else if (cur?.pin) showPin(cur.pin); },
+    // f({place} or {pin}) after each selection
+    onChange: f => listeners.push(f),
   };
   return api;
 }

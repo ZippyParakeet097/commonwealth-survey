@@ -2,7 +2,7 @@
 // workshop settlements, key places, minor places, unmarked places). Each tries the right, left,
 // two right diagonals, above and below its point; markers already on the map count as obstacles.
 // A label with no free spot is hidden until you zoom in.
-export function placeLabels({ vb, u, off, fw, fh, locs, unm, sel, show }) {
+export function placeLabels({ vb, u, off, fw, fh, locs, unm, sel, show, blocks = [] }) {
   const v0 = vb.x - vb.w * .1, v1 = vb.x + vb.w * 1.1, h0 = vb.y - vb.h * .1, h1 = vb.y + vb.h * 1.1;
   const inView = p => p.x > v0 && p.x < v1 && p.y > h0 && p.y < h1;
   const cell = u * 60, grid = new Map();
@@ -10,8 +10,10 @@ export function placeLabels({ vb, u, off, fw, fh, locs, unm, sel, show }) {
   const add = (b, who) => { b.who = who; keys(b).forEach(k => { if (!grid.has(k)) grid.set(k, []); grid.get(k).push(b); }); };
   const hits = (b, who) => keys(b).some(k => (grid.get(k) || []).some(q => q.who !== who && q[0] < b[2] && q[2] > b[0] && q[1] < b[3] && q[3] > b[1]));
   const visible = l => !l.hid && inView(l) && (show.loc || (l.mm && show.mm)) && (!l.bos || show.bos);
-  const dotBox = l => { const rr = +l.dot.getAttribute('r'); return [l.x - rr, l.y - rr, l.x + rr, l.y + rr]; };
-  // obstacles: the markers themselves
+  const dotBox = l => { const rr = l.rad || 0; return [l.x - rr, l.y - rr, l.x + rr, l.y + rr]; };
+  // obstacles: the markers themselves, and any other marks on the map (the Pip-Boy's Boston marker)
+  blocks.forEach(b => add(b, 'block'));
+  const inBlock = b => blocks.some(q => q[0] < b[2] && q[2] > b[0] && q[1] < b[3] && q[3] > b[1]);
   locs.forEach(l => { if (!visible(l) || l.dot.style.display === 'none') return;
     add(l.mm && show.mm ? [l.x - fw / 2, l.y - fh / 2, l.x + fw / 2, l.y + fh / 2] : dotBox(l), l); });
   if (show.unm) unm.forEach(l => { if (inView(l)) add(dotBox(l), l); });
@@ -31,6 +33,8 @@ export function placeLabels({ vb, u, off, fw, fh, locs, unm, sel, show }) {
       let ax = 'start', bx = +el.getAttribute('x'); const by = +el.getAttribute('y'); let b = boxOf(ax, bx, by);
       // an icon's label flips to the icon's left when a marker sits on its right
       if (it.p.icon && !it.p.stacked && hits(b, it.p)) { const lb = boxOf('end', 2 * x - bx, by); if (!hits(lb, it.p)) { ax = 'end'; bx = 2 * x - bx; b = lb; el.setAttribute('x', bx); } }
+      // a fixed label never covers a block (the Boston marker); it waits for the zoom instead
+      if (inBlock(b) && it.pri > 0) { el.style.display = 'none'; it.p.box = null; continue; }
       add(b, it.p); it.p.box = b; el.setAttribute('text-anchor', ax); el.style.display = ''; continue;
     }
     const R = ['start', x + o, y + fs * .35], L = ['end', x - o, y + fs * .35], T = ['middle', x, y - o - fs * .15], B = ['middle', x, y + o + fs * .85],

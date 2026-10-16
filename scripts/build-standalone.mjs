@@ -6,6 +6,7 @@
 // relative paths (`import { a, b } from './x.js';`), and exports are `export function` or
 // `export const` declarations at the top level.
 import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
@@ -46,13 +47,16 @@ const data = {
   plans: JSON.parse(await read('data/plans.json')), gs: JSON.parse(await read('data/glowing-sea.json')),
   nw: JSON.parse(await read('data/nuka-world.geojson')), region: JSON.parse(await read('data/region.json')), csv: await read('data/locations.csv'),
 };
-const css = await read('css/survey.css');
+// the stylesheet's own files (the Pip-Boy's font) travel inside it, so the one file stays whole offline
+const css = (await read('css/survey.css')).replace(/url\(\.\.\/(assets\/fonts\/[\w.-]+\.woff2)\)/g,
+  (_, f) => `url(data:font/woff2;base64,${readFileSync(new URL(f, root)).toString('base64')})`);
 let html = await read('index.html');
 const icon = await read('assets/icon.svg');
 const safe = s => s.replace(/<\/script/gi, '<\\/script');
 
 html = html
   .replace('<link rel="stylesheet" href="css/survey.css">', () => `<style>\n${css}</style>`)
+  .replace(/<link rel="preload" href="assets\/fonts\/[^"]+"[^>]*>\n?/, '')
   .replace('<link rel="icon" href="assets/icon.svg" type="image/svg+xml">', () => `<link rel="icon" href="data:image/svg+xml,${encodeURIComponent(icon)}">`)
   .replace(/<!--app-->[\s\S]*<!--\/app-->/, () => `<script>window.__SURVEY_DATA__ = ${safe(JSON.stringify(data))};</script>\n<script>\n"use strict";\n${safe(bundled)}\n</script>`)
   // links into the repo's data folder point at GitHub instead, since the file travels alone

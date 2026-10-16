@@ -27,6 +27,7 @@
   --monster: var(--c); --bldg: color-mix(in srgb, var(--c) 15%, #000); --street: color-mix(in srgb, var(--c) 25%, #000);
   --grid: color-mix(in srgb, var(--c) 26%, transparent); --grid-major: color-mix(in srgb, var(--c) 44%, transparent);
   --meas: var(--c); --nw: var(--c); --halo: var(--bg); --pin: var(--ink);
+  --mm-bg: var(--bg); --mm-fg: var(--c);  /* the Minutemen flag */
 
   --f-ui: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   --f-mono: "Share Tech Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -293,6 +294,7 @@ html[data-theme="field"] {
   --monster: #3f4628; --bldg: #d3c7a2; --street: #c4b68c;
   --grid: rgba(35,35,28,.2); --grid-major: rgba(35,35,28,.38);
   --meas: #a3261b; --nw: #3f4628; --halo: #e6dcbc; --pin: #a3261b;
+  --mm-bg: #2b3d7e; --mm-fg: #f4efdf;  /* the flag's own blue, as in the game */
 
   --f-ui: "Courier Prime", "Courier New", ui-monospace, monospace;
   --f-mono: "Special Elite", "American Typewriter", "Courier New", monospace;

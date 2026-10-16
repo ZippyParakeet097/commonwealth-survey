@@ -1,0 +1,14 @@
+{
+  "name": "commonwealth-survey",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Fallout 4 map warped onto real eastern Massachusetts, with a scale grid and route measuring in true miles.",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "build": "node scripts/build-standalone.mjs",
+    "check": "node scripts/check-data.mjs"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}

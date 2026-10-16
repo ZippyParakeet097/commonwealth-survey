@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Commonwealth Survey</title>
+<meta name="description" content="The Fallout 4 map warped onto real eastern Massachusetts, so you can measure the Commonwealth in true miles.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,400;0,600;0,800;1,400&family=Overpass+Mono:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<link rel="stylesheet" href="css/survey.css">
+</head>
+<body>
+<!--symbols-->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <g id="pry-shape"><circle cx="84" cy="257" r="18"/><path d="M90 257 C90 204 150 163 240 162 C322 161 384 182 428 222 L440 257 L428 292 C384 332 322 353 250 353 C160 353 90 312 90 257 Z"/><path d="M398 224 C406 200 425 185 446 185 C462 185 476 199 484 213 C467 210 450 216 440 234 Z"/><path d="M432 242 L470 242 C492 244 492 270 470 272 L432 272 Z"/><path d="M398 290 C406 314 425 329 446 329 C462 329 476 315 484 301 C467 304 450 298 440 280 Z"/><path fill-rule="evenodd" d="M158 336 L304 336 L300 376 C299 384 293 390 285 390 L181 390 C173 390 167 384 166 376 Z M188 362 L278 362 L278 373 L188 373 Z"/></g>
+  <symbol id="prydwen" viewBox="40 130 480 285"><use href="#pry-shape" fill="var(--land)" stroke="var(--land)" stroke-width="22" stroke-linejoin="round"/><use href="#pry-shape" fill="var(--bos)"/></symbol>
+  <symbol id="prydwen-flat" viewBox="60 150 440 245"><use href="#pry-shape" fill="currentColor"/></symbol>
+  <path id="mm-star" d="M0-21 L4.9-6.7 L20-6.5 L8 2.5 L12.3 17 L0 8.3 L-12.3 17 L-8 2.5 L-20-6.5 L-4.9-6.7Z"/>
+  <symbol id="mm-flag" viewBox="0 0 556 359"><rect width="556" height="359" fill="#1c3f7d"/><g fill="#fff"><path d="M232 222 L392 86" stroke="#fff" stroke-width="9" stroke-linecap="square"/><path d="M160 312 L234 222" stroke="#fff" stroke-width="20"/><path d="M148 300 L172 326 L180 310 Z"/><circle cx="222" cy="240" r="9"/><path d="M155 74 L280 190 L280 150 L405 316 L280 245 Z" stroke="#1c3f7d" stroke-width="16" paint-order="stroke"/><use href="#mm-star" x="280" y="76"/><use href="#mm-star" x="155" y="182"/><use href="#mm-star" x="395" y="182"/></g></symbol>
+</defs></svg>
+<!--/symbols-->
+
+<div class="sheet">
+  <header class="title">
+    <div>
+      <p class="kicker">Fallout 4 · unofficial fan atlas</p>
+      <h1>Commonwealth Survey</h1>
+    </div>
+    <div class="sheetno">EPSG:26986 · MA State Plane<br>Fallout 4 map warped onto real terrain</div>
+    <p class="lede">The game squeezes eastern Massachusetts into a few square miles. This sheet puts every game location back on the real ground, so you can measure journeys, frontiers and sight lines in true miles. Real landmarks sit where they really are, drawn to their real outlines when you zoom in. Fictional places are placed by stretching the game map to fit them.</p>
+  </header>
+
+  <div class="work">
+    <div class="mapwrap" id="mapwrap">
+      <svg id="map" role="img" aria-label="Map of eastern Massachusetts with Fallout 4 locations placed at their real-world positions"></svg>
+      <div class="mapctl"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button></div>
+      <div class="scale" id="scale"><span id="scalet">5 mi</span><i id="scalebar"></i><span id="gridkey" hidden></span></div>
+      <div class="cursor" id="cursor" hidden></div>
+      <div class="modebar" id="modebar" hidden>Measuring: click to add points · Backspace undoes · Esc stops</div>
+      <div class="tip" id="tip" hidden></div>
+      <div class="loading" id="loading">Loading the survey…</div>
+    </div>
+
+    <aside>
+      <div class="card">
+        <h2>Find a place</h2>
+        <input id="q" list="places" placeholder="Sanctuary Hills, Diamond City, Fort Strong…" autocomplete="off" aria-label="Find a place">
+        <datalist id="places"></datalist>
+        <div class="views">
+          <button data-view="game">Game map</button>
+          <button data-view="all">Whole sheet</button>
+          <button data-view="concord">Sanctuary &amp; Concord</button>
+          <button data-view="boston">Boston &amp; harbor</button>
+          <button data-view="gs">Glowing Sea</button>
+        </div>
+      </div>
+      <div class="card" id="info" aria-live="polite"></div>
+      <div class="card">
+        <h2>Scale grid</h2>
+        <div class="row">
+          <label class="inline"><input type="checkbox" id="L-grid" checked>Show grid</label>
+          <div class="seg" role="group" aria-label="Units"><button data-unit="mi" aria-pressed="true">mi</button><button data-unit="km" aria-pressed="false">km</button></div>
+        </div>
+        <label class="field">Each square
+          <select id="gridsize"></select>
+        </label>
+        <p class="readout" id="gridread"></p>
+        <p class="small" id="scalefact"></p>
+      </div>
+      <div class="card">
+        <h2>Measure</h2>
+        <div class="views">
+          <button id="m-toggle" aria-pressed="false">Measure a route</button>
+          <button id="m-undo" disabled>Undo</button>
+          <button id="m-clear" disabled>Clear</button>
+        </div>
+        <button class="plan-go wide" id="m-search">Trace the Sole Survivor's search</button>
+        <dl class="kv" id="m-out"></dl>
+        <p class="small" id="m-hint">Click points on the map. Points snap to nearby places. Distances are straight lines between points.</p>
+      </div>
+      <div class="card">
+        <h2>Layers</h2>
+        <div class="layers">
+          <label><input type="checkbox" id="L-mm" checked><svg class="mmsw" viewBox="0 0 556 359" aria-hidden="true"><use href="#mm-flag"/></svg>Workshop settlements (Minutemen)</label>
+          <label><input type="checkbox" id="L-loc" checked><span class="sw" style="background:var(--loc)"></span>Game locations</label>
+          <label><input type="checkbox" id="L-unm"><span class="sw dot" style="background:var(--unm)"></span>Unmarked locations</label>
+          <label><input type="checkbox" id="L-bos" checked><svg class="prysw" viewBox="0 0 440 245" aria-hidden="true"><use href="#prydwen-flat" width="440" height="245"/></svg>Brotherhood of Steel</label>
+          <label><input type="checkbox" id="L-gs" checked><span class="sw" style="background:var(--gs-fill);border-color:var(--gs)"></span>Glowing Sea &amp; nuclear craters</label>
+          <label><input type="checkbox" id="L-site" checked><span class="sw" style="background:var(--site);border-color:var(--loc)"></span>Real site outlines</label>
+          <label><input type="checkbox" id="L-fp" checked><span class="sw" style="background:var(--fp);border-style:dashed;border-color:var(--fpline)"></span>Edge of the game map</label>
+          <label><input type="checkbox" id="L-wet" checked><span class="sw" style="background:var(--wet)"></span>Wetlands &amp; floodplain</label>
+          <label><input type="checkbox" id="L-town" checked><span class="sw" style="background:var(--land)"></span>Town names</label>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="routeband" id="routeband">
+    <div class="band-h">
+      <h2>The Sole Survivor's search</h2>
+      <button class="plan-go" id="route-go">Show on map</button>
+    </div>
+    <div class="gsgrid">
+      <div class="gstext">
+        <div class="facts"><div><b id="rt-total"></b><span>Main quest, stop to stop</span></div><div><b id="rt-walk"></b><span>On foot at 3 mph</span></div><div><b id="rt-legs"></b><span>Legs</span></div></div>
+        <p>From the Vault 111 elevator to the Courser at Greenetech Genetics, the main quest sends the Sole Survivor back and forth across the Commonwealth. Laid on real ground, the straight-line legs add up to the distance above. Real roads, rivers and detours make any actual walk longer.</p>
+        <p>After Greenetech the Sole Survivor builds a signal interceptor and teleports into the Institute beneath CIT, <span id="rt-tp"></span> away, so that last stretch is not walked.</p>
+      </div>
+      <div class="tbl"><table id="routet"><thead><tr><th>Stop</th><th>Quest</th><th style="text-align:right">Leg</th><th style="text-align:right">Total</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <div class="band-h">
+    <h2>Site plans</h2>
+    <p>Four places drawn from OpenStreetMap at true scale with north up.</p>
+  </div>
+  <div class="plans">
+    <figure class="plan" id="plan-fen">
+      <div class="plan-head"><h3>Diamond City<span class="real">Fenway Park, Boston</span></h3><button class="plan-go" data-plan="fen">Show on map</button></div>
+      <svg role="img" aria-label="Plan of Fenway Park: the field opens northeast from home plate near Jersey Street, with the Green Monster wall along Lansdowne Street"></svg>
+      <figcaption>
+        <div class="facts"><div><b>37 ft 2 in</b><span>Green Monster</span></div><div><b>310 ft</b><span>Left-field line</span></div><div><b id="fen-size"></b><span>Whole site</span></div></div>
+        <p>Home plate sits at the southwest corner by Jersey Street, and the field opens northeast. The Green Monster backs onto Lansdowne Street, so the city's tallest wall faces north toward the Charles and the Turnpike cut. The Mass Pike trench runs just beyond Lansdowne, a natural moat on that side. In the game the market and most homes stand on the field, and the better-off live up in the stands.</p>
+      </figcaption>
+    </figure>
+    <figure class="plan" id="plan-castle">
+      <div class="plan-head"><h3>The Castle<span class="real">Fort Independence, Castle Island</span></h3><button class="plan-go" data-plan="castle">Show on map</button></div>
+      <svg role="img" aria-label="Plan of Castle Island: Fort Independence is a granite pentagon with five bastions, joined to South Boston by a causeway"></svg>
+      <figcaption>
+        <div class="facts"><div><b>5</b><span>Bastions</span></div><div><b id="castle-size"></b><span>Fort across</span></div><div><b>1851</b><span>Granite fort finished</span></div></div>
+        <p>A granite pentagon with a bastion at each corner, on a former island now joined to the South Boston shore by land. Every dry approach runs in from South Boston to the west; everything else is open water.</p>
+      </figcaption>
+    </figure>
+    <figure class="plan" id="plan-strong">
+      <div class="plan-head"><h3>Fort Strong<span class="real">Long Island Head, Boston Harbor</span></h3><button class="plan-go" data-plan="strong">Show on map</button></div>
+      <svg role="img" aria-label="Plan of Long Island Head: Fort Strong's batteries cluster on the bluff at the island's northern tip, beside Long Island Head Light"></svg>
+      <figcaption>
+        <div class="facts"><div><b>5</b><span>Named batteries</span></div><div><b id="strong-dist"></b><span>To the Castle</span></div><div><b>2014</b><span>Bridge closed</span></div></div>
+        <p>The real Fort Strong is a set of ruined coastal batteries on the bluff at Long Island's northern head, beside the lighthouse. Long Island has been cut off from the mainland since its bridge closed in 2014. The game places Fort Strong north of its real spot, so the warp had to pull the harbor islands back into line.</p>
+      </figcaption>
+    </figure>
+  </div>
+
+  <div class="plans plans-2">
+    <figure class="plan" id="plan-hang">
+      <div class="plan-head"><h3>Hangman's Alley<span class="real">Back Street, Back Bay: placed from the game's clues</span></h3><button class="plan-go" data-plan="hang">Show on map</button></div>
+      <svg role="img" aria-label="Plan of Back Street between Charlesgate East and Massachusetts Avenue: a narrow alley behind Beacon Street's river-side houses, with Storrow Drive and the Charles River to the north and the Harvard Bridge at its east end"></svg>
+      <figcaption>
+        <div class="facts"><div><b id="hang-len"></b><span>Alley length</span></div><div><b id="hang-dc"></b><span>To Diamond City</span></div><div><b id="hang-cit"></b><span>To CIT, across the bridge</span></div></div>
+        <p>Hangman's Alley has no canon real counterpart, so it was placed from the game's own clues. In the game it is a narrow alley a few blocks north of Diamond City, in the Fens, with its front gate barred on the Diamond City side and its way in from the waterfront; from Diamond City you head for the bridge and turn left just before it. Back Street fits all of that. It is a real service alley behind the river side of Beacon Street. The backs of 506–534 Beacon, three to ten storeys, wall it in on the south and Storrow Drive and the Charles on the north. Its east end opens at the foot of the Harvard Bridge, the bridge to CIT, and its west end at Charlesgate, where the Fens drain into the river.</p>
+        <p>It also keeps the game's spacing. Measured against the walk to Diamond City, CIT, the Public Library and the Common sit at nearly the same ratios as on the game map. The straight warp had put the Alley in Brookline, nearly a mile west.</p>
+      </figcaption>
+    </figure>
+  </div>
+
+  <section class="mmband">
+    <div class="band-h">
+      <h2><svg class="mmi" style="width:30px;height:19px;vertical-align:-2px;margin-right:10px" viewBox="0 0 556 359" aria-hidden="true"><use href="#mm-flag"/></svg>Workshop settlements</h2>
+      <p>Every Commonwealth workshop the Minutemen can hold in Fallout 4 and its Commonwealth add-ons: 28 from the base game, the Mechanist's lair from Automatron and Vault 88 from Vault-Tec Workshop. Home Plate and Boston Airport have workshops too but are left out: one is the player's house, the other opens only to the Brotherhood. Far Harbor (Maine) and Nuka-World lie off this map.</p>
+    </div>
+    <div class="tbl mmtbl"><table id="mmt"><thead><tr><th>Settlement</th><th>Real town</th><th style="text-align:right">From Sanctuary</th><th>Toward</th><th>Added by</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="gsband" id="gsband">
+    <div class="band-h">
+      <h2>The Glowing Sea</h2>
+      <button class="plan-go" id="gs-go">Show on map</button>
+    </div>
+    <div class="gsgrid">
+      <div class="gstext">
+        <div class="facts"><div><b id="gs-r"></b><span>Farthest reach</span></div><div><b id="gs-a"></b><span>Inside game map</span></div><div><b id="gs-t"></b><span>Theorized whole</span></div></div>
+        <p>The game's Glowing Sea was traced from the terrain colour of the satellite map, where the ash plain shows as a distinct blue-grey patch, and warped onto the real ground like everything else. It fills the southwest corner of the playable area and runs straight into the map's west and south edges, so the game only shows part of it. Everything beyond the map edge below is a theory, drawn hatched.</p>
+        <p>Measured from the Crater of Atom, the visible edge sits <span id="gs-range"></span> away: nearest to the east and northeast, toward Boston, and farthest to the north. The crater is not in the middle. The edge curves round a point to its southwest, the lopsided egg a fallout footprint makes, with ground zero near the narrow upwind end. Fitted to the visible edge, that shape puts the fallout drifting toward the southwest (bearing <span id="gs-brg"></span>), so the hidden side beyond the map is the long, downwind end, not a thin rim.</p>
+        <p><b>Wind.</b> That needs a northeast wind on the morning of the war, and it is not the usual one. On late-October mornings from 2000 to 2020, the ground wind at Norwood blew from the northeast or east about one morning in six (17%), the lowest 3 km of air over Chatham moved toward the southwest quadrant about one morning in nine (11%), and the high winds that carry a megaton cloud's fine fallout went that way almost never (1%). Most days the fallout would have gone toward Boston. A clear, crisp day with high pressure building in from Quebec gives exactly that northeast breeze, which suits the sunny morning in the game's opening.</p>
+        <p><b>Ground.</b> The terrain decides where it stops. The crater sits in a low basin of swamps and river meadows, about <span id="gs-ec"></span> above sea level, drained by the Charles, the Neponset and the Stop River. Southwest of the map edge that lowland runs on through Medway, Franklin, Wrentham and Plainville, glacial sand and gravel threaded with swamp, until it meets the rocky, till-covered hills of Holliston, Franklin and Wrentham and, past them, the Worcester Plateau rising toward Hopkinton and Milford at around <span id="gs-ew"></span>. The theorized edge treats high ground as a barrier and wet low ground as a channel, so it follows the valleys out and halts at the hills: its hidden stretch runs mostly at <span id="gs-ee"></span>, reaching <span id="gs-r2"></span> south into <span id="gs-ft"></span>. If the hills had held nothing back, the same footprint would run on <span id="gs-ht"></span> (dotted line, <span id="gs-hr"></span> from the crater).</p>
+        <p class="small">How well each version matches the part of the Sea the game shows (area overlap, intersection over union): a crater-centred circle <span id="gs-i0"></span>, the wind-blown footprint over real terrain <span id="gs-i1"></span>, the same footprint on flat ground <span id="gs-i2"></span>. The game's zone does not follow real hills, so terrain costs a little fit inside the map; it is used for where the hidden side would stop. In the model, ground gets e-fold harder to cross for every 60 m (200 ft) it rises above the crater floor, and swamp and open water are 40% easier. The whole Sea comes to <span id="gs-tr"></span>: no wind, then with terrain (drawn), then flat ground.</p>
+        <p>Its bomb was not the only one. Cambridge crater, a block-wide bowl on the East Cambridge riverfront, is drawn the same way. Sized against Fenway on the game map, it is about <span id="cc-d"></span> across against <span id="atom-d"></span> for the Crater of Atom. In dry soil, a surface burst's crater widens roughly with yield to the 0.3 power, so those sizes point to about <span id="cc-kt"></span> at Cambridge and <span id="atom-kt"></span> in the Sea: one bomb about <span id="kt-ratio"></span> times bigger than the other. Each crater is drawn at that size, with a dashed ring for its lip of thrown-out earth.</p>
+        <p>Two of Boston's rivers drain it. The Charles winds through Millis and Medfield inside the zone before heading for the city, and the Neponset rises inside it and reaches the harbor between Dorchester and Quincy.</p>
+        <p class="small">Winds: Chatham (KCHH) 8 am soundings and Norwood airport observations, 9 October to 6 November, 2000–2020, from the Iowa Environmental Mesonet. Terrain: AWS Terrain Tiles (USGS elevation). Wetlands: MassGIS 1:25,000 hydrography.</p>
+        <p class="small">Crater yields use Glasstone and Dolan, <i>The Effects of Nuclear Weapons</i>, §6.09: a dry-soil surface burst leaves a crater about 60 ft in radius at 1 kiloton, growing as the yield to the 0.3 power. The game's crater art is the only evidence, so treat them as rough.</p>
+        <p class="small">The southwest corner has no real landmarks to pin the warp, so this part of the sheet is the least certain: read the edge as good to a mile or two.</p>
+      </div>
+      <div class="gstowns">
+        <h3>Real towns under the in-game Sea</h3>
+        <ul id="gs-tz"></ul>
+        <h3>Theorized beyond the map edge</h3>
+        <ul id="gs-tb"></ul>
+        <p class="small">Share of each town's land inside the zone. Only towns with more than about 150 acres in it are listed.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="notes">
+    <section>
+      <h2>Reading the scale</h2>
+      <p id="scale-notes"></p>
+      <p>Turn on the scale grid to see the ground in even squares, and pick a square size to suit the question: a quarter mile for a settlement's walls, a mile for a day's patrol, five or ten for a faction's reach. The grid covers the game map and the theorized Glowing Sea beyond its edge, with square A1 at the northwest corner. The place card names the square each location falls in, so you can cite a grid reference in your own writing.</p>
+      <h2>What the real map changes</h2>
+      <p id="real-notes"></p>
+    </section>
+    <section>
+      <h2>How the positions were made</h2>
+      <p>55 game locations have a real counterpart, such as Fenway Park for Diamond City, Fort Independence for the Castle, Long Island Head for Fort Strong and Scollay Square for Goodneighbor. Some are exact; others, like Harvard Square for College Square, are likely analogues, and the place card says which. A thin-plate spline fitted through those pairs, plus 11 fictional sites placed by hand from the game's clues (Hangman's Alley, the Nakano residence and others), moves everything else. Tested by leaving each anchor out in turn, it lands a typical place within about 0.7 miles of the truth, and never more than about 2.8.</p>
+      <p>Places that sit on or under another one, like the Institute under CIT or Vault 114 under Park Street, take that site's position. Fictional land sites that the warp dropped into the sea were moved to the nearest shore, and their cards say so.</p>
+      <h2>Use the data</h2>
+      <p>Every position is in <a href="data/locations.csv">locations.csv</a> with real latitude and longitude, and the Glowing Sea and craters are in <a href="data/glowing-sea.geojson">glowing-sea.geojson</a>, ready for QGIS, Google Earth or your own maps. Spotted a place in the wrong spot? Corrections are welcome on <a href="https://github.com/ZippyParakeet097/commonwealth-survey">GitHub</a>.</p>
+    </section>
+  </div>
+
+  <footer class="credits">
+    <p>Sources: MassGIS town boundaries and hydrography (1:25,000); OpenStreetMap for landmark positions, outlines and site plans, © OpenStreetMap contributors, ODbL; AWS Terrain Tiles (USGS elevation); the game's location table on the 2048 grid.</p>
+    <p>An unofficial fan project, not affiliated with or endorsed by Bethesda Softworks or ZeniMax Media. Fallout is a trademark of ZeniMax Media Inc. Positions of fictional places are interpretations, not canon.</p>
+  </footer>
+</div>
+
+<!--app-->
+<script type="module" src="js/main.js"></script>
+<!--/app-->
+</body>
+</html>

@@ -14,7 +14,25 @@ The game squeezes Boston and its suburbs into a few square miles. This tool puts
 - **The Glowing Sea.** The in-game Sea warped onto real ground, plus a theory of how far it runs past the map's edge, worked out from fallout drift, October winds and real terrain. Both nuclear craters are drawn at their estimated true size.
 - **Nuka-World, theorized.** The park is off the game map, so it gets its own figure: southern New England with the survey sheet, the game map and the fan-favoured site, Six Flags New England in Agawam, about 66 miles west-southwest of the transit center. The fastest real drive there, 82 miles by the Mass Pike, is drawn on it. The figure and the place card give the reasoning and sources.
 - **Places on real ground:** site plans of Diamond City, the Castle, Fort Strong and Hangman's Alley, drawn from OpenStreetMap at true scale.
-- Miles or kilometres, light or dark (follows your system), and links that open on a place: `…/#place=Diamond%20City`.
+- **A Pip-Boy screen.** The survey is laid out like the Pip-Boy 3000 Mark IV: SURVEY, SITES, DATA, MAP and SEA tabs in the game's own slot order, quests and workshops under DATA, and a key-hint bar along the bottom. Pick the Pip-Boy colour under Settings: green (the Fallout 4 default), amber (New Vegas), blue or white.
+- Miles or kilometres, and links that open on a place: `…/#place=Diamond%20City`.
+
+## Keyboard and accessibility
+
+Everything works from the keyboard, and the keys follow the game where it has one. Press `?` for the full list.
+
+| Keys | Does |
+|---|---|
+| `1`–`5` | Survey, Sites, Data, Map, Sea |
+| `M`, `J` | Map, Data (as in Fallout 4) |
+| `A` `D` | Previous or next sub-tab |
+| `W` `S` or `↑` `↓` | Move up or down a list; `E` or `Enter` shows the highlighted row on the map |
+| On the map: arrows or `W` `A` `S` `D`, `+` `−` | Move the crosshair, zoom |
+| On the map: `E`, `Enter` or `Space` | Select the place under the crosshair, drop a pin, or add a measuring point |
+
+The letter and number shortcuts can be turned off under Settings (WCAG 2.1.4), and never fire while you type in a field. Tab, the arrow keys, Enter and Esc always work.
+
+The page aims at WCAG 2.2 AA. Every shade is a mix of the chosen Pip-Boy colour with black, and `npm run check` verifies that each text and control colour pair meets AA contrast for every tint. With one colour on screen, map layers are told apart by line style and texture rather than hue: wetlands by marsh tufts, the Glowing Sea by a hatched band inside its edge, Brotherhood of Steel places by the Brotherhood's emblem and its ground (Logan Airport) by cross-hatching inside a double border, the game map's edge by a dash-dot line. Selections and changes are announced to screen readers. Scanlines and glow can be switched off, and switch off by themselves when your system asks for more contrast.
 
 ## Run it
 
@@ -49,7 +67,7 @@ Everything the map shows is in [`data/`](data/), ready for QGIS, Google Earth, a
 | `marked` | `yes` if it has a marker on the game's map, `no` for unmarked places. |
 | `key` | Label priority: `2` always labelled, `1` labelled from a moderate zoom, `0` only up close. |
 | `workshop` | For the 30 Minutemen workshop settlements: `Base game`, `Automatron` or `Vault-Tec Workshop`. |
-| `faction` | `Brotherhood of Steel` for the places drawn in Brotherhood red. |
+| `faction` | `Brotherhood of Steel` for the Brotherhood's places, marked with the Brotherhood emblem. |
 | `game_x`, `game_y` | Position on the game's 2048 × 2048 map grid, origin top-left. |
 | `lat`, `lon` | Real-world position. **This is what the map draws.** |
 | `position` | How it was placed: `real landmark`, `likely real analogue`, `shares a real site` (e.g. the Institute under CIT), `placed from game clues`, `extrapolated`, or `extrapolated, moved to shore`. |
@@ -76,7 +94,7 @@ Corrections to positions, real counterparts and notes are the most useful contri
 
 ```sh
 npm start          # serve at http://localhost:8080
-npm run check      # validate data/locations.csv
+npm run check      # validate data/locations.csv and the palette's contrast
 npm run build      # write the single-file version to dist/commonwealth-survey.html
 ```
 

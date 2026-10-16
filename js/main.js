@@ -1,5 +1,5 @@
 import { units, project, unproject, fmtLatLon } from './geo.js';
-import { $, on, prefs } from './util.js';
+import { $, on, prefs, announce } from './util.js';
 import { loadData, buildPlaces, buildNukaWorld } from './data.js';
 import { createMap } from './map.js';
 import { createGrid } from './grid.js';
@@ -8,8 +8,10 @@ import { createCard } from './card.js';
 import { createPanels } from './panels.js';
 import { makePlans } from './plans.js';
 import { createRegion } from './region.js';
+import { createPipBoy } from './pipboy.js';
 
 async function main() {
+  const pip = createPipBoy();
   let D;
   try { D = await loadData(); } catch (err) {
     $('loading').innerHTML = location.protocol === 'file:'
@@ -29,10 +31,22 @@ async function main() {
   const card = createCard({ map, grid, byId, D });
   createRegion({ D, nw, tc: byId.get('Nuka-World transit center') });
   const plans = makePlans(D.plans, byId);
-  const panels = createPanels({ map, card, measure, byId, D });
+  // anything that shows a place from another tab switches to the map first (the map needs its size
+  // to fit a view), then brings the map into view and gives it focus, so keyboard users land on it
+  // (focus waits a frame, until the caller has moved the view, so the crosshair starts on the new place)
+  const showMap = () => { if (pip.tab !== 'map') pip.show('map'); map.wrap.scrollIntoView({ block: 'nearest' }); requestAnimationFrame(() => map.svg.focus({ preventScroll: true })); };
+  const panels = createPanels({ map, card, measure, byId, D, showMap });
 
   const reveal = p => { if (p.kind === 'unm' && !on('unm')) $('L-unm').click(); if (p.bos && !on('bos')) $('L-bos').click(); };
-  map.hooks.tap = (pt, p) => { if (measure.active) measure.add(pt, p); else if (p) card.select(p); else card.pin(pt); };
+  map.hooks.tap = (pt, p) => {
+    if (measure.active) measure.add(pt, p);
+    else if (p) { card.select(p); announce(`Selected ${p.n}${p.town ? ', ' + p.town : ''}. Details are in the place card.`); }
+    else { card.pin(pt); const [lat, lon] = unproject(pt.x, pt.y); announce(`Dropped a pin at ${fmtLatLon(lat, lon)}.`); }
+  };
+  // what the crosshair is over, said once the keys stop
+  let kbdTimer = 0;
+  map.hooks.kbd = (pt, p) => { clearTimeout(kbdTimer); kbdTimer = setTimeout(() => {
+    const ref = grid.ref(pt); announce(p ? `Crosshair on ${p.n}${ref ? ', square ' + ref : ''}.` : ref ? `Crosshair in square ${ref}.` : ''); }, 700); };
   map.hooks.move = pt => {
     const [lat, lon] = unproject(pt.x, pt.y), ref = grid.ref(pt), c = $('cursor');
     c.textContent = fmtLatLon(lat, lon) + (ref ? ` · ${ref}` : ''); c.hidden = false;
@@ -44,8 +58,8 @@ async function main() {
   // find a place
   const dl = $('places');
   [...places, nw].sort((a, b) => (a.kind === 'unm') - (b.kind === 'unm') || a.id.localeCompare(b.id)).forEach(p => { const o = document.createElement('option'); o.value = p.id; if (p.kind === 'unm') o.label = 'unmarked'; dl.appendChild(o); });
-  $('q').addEventListener('change', e => { const p = byId.get(e.target.value.trim()); if (p) { reveal(p); card.select(p, true); } });
-  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => map.VIEWS[b.dataset.view]());
+  $('q').addEventListener('change', e => { const p = byId.get(e.target.value.trim()); if (p) { reveal(p); card.select(p, true); announce(`Selected ${p.n}. The map is centred on it.`); } });
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { map.VIEWS[b.dataset.view](); announce(`Map view: ${b.textContent}.`); });
 
   // units
   const unitButtons = document.querySelectorAll('[data-unit]');
@@ -53,10 +67,11 @@ async function main() {
   unitButtons.forEach(b => b.onclick = () => setUnit(b.dataset.unit));
   unitButtons.forEach(b => b.setAttribute('aria-pressed', b.dataset.unit === units.unit));
 
-  // site plans redraw when their width changes
-  let planW = 0;
-  new ResizeObserver(() => { const w = document.querySelector('.plan svg').clientWidth; if (Math.abs(w - planW) > 2) { planW = w; plans.draw(); } }).observe(document.querySelector('.plans'));
-  document.querySelectorAll('.plan-go[data-plan]').forEach(b => b.onclick = () => { map.fitBox(plans.PLANS[b.dataset.plan].box); map.wrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+  // site plans sit on hidden tabs until opened, so each redraws when it first gets (or changes) its width
+  const planW = new Map();
+  const planRO = new ResizeObserver(es => { if (es.some(e => { const w = e.contentRect.width; if (!w || Math.abs(w - (planW.get(e.target) || 0)) <= 2) return false; planW.set(e.target, w); return true; })) plans.draw(); });
+  document.querySelectorAll('.plan:not(#plan-nw) svg').forEach(s => planRO.observe(s));
+  document.querySelectorAll('[data-plan]').forEach(b => b.onclick = () => { showMap(); map.fitBox(plans.PLANS[b.dataset.plan].box); announce(`Showing ${b.closest('.plan').querySelector('h3').firstChild.textContent} on the map.`); });
 
   // a shared link opens on its place or pin: #place=Diamond%20City, #pin=42.35,-71.06
   const h = new URLSearchParams(location.hash.slice(1));

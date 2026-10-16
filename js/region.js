@@ -20,7 +20,7 @@ export function createRegion({ D, nw, tc }) {
     let s = `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="var(--sea)"/>` + P(R.us, 'var(--land)')
       + `<path d="${R.borders}" fill="none" stroke="var(--rule)" stroke-width="1" ${NSS}/>`
       + `<rect x="0" y="0" width="${B.w}" height="${B.h}" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4 3" ${NSS}/>`
-      + `<path d="${B.footprint}" fill="var(--fpline)" fill-opacity=".3" stroke="var(--fpline)" stroke-width="1.3" ${NSS}/>`
+      + `<path d="${B.footprint}" fill="var(--fpline)" fill-opacity=".14" stroke="var(--fpline)" stroke-width="1.3" ${NSS}/>`
       + R.states.map(t => `<text class="t-region" x="${t.x}" y="${t.y}" text-anchor="middle">${esc(t.n)}</text>`).join('')
       + T(u * 6, u * 14, 'sub', 'This survey sheet') + T(gx0, gy1 + u * 14, 'fp', 'Game map');
     s += R.cities.map(c => `<circle cx="${c.x}" cy="${c.y}" r="${u * 2.5}" fill="var(--ink)"/>`

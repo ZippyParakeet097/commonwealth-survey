@@ -27,7 +27,7 @@ export function createCard({ map, grid, byId, D }) {
     if (CRATER[p.n]) c += `<span class="chip gs">${CRATER[p.n]}</span>`;
     if (p.gs) c += '<span class="chip gs">Glowing Sea</span>';
     if (p.mm) c = `<span class="chip mm"><svg class="mmi" viewBox="0 0 556 359" aria-hidden="true"><use href="#mm-flag"/></svg>Workshop settlement · ${esc(p.mm)}</span>` + c;
-    if (p.bos) c = '<span class="chip bos"><svg class="pryi" viewBox="0 0 440 245" aria-hidden="true"><use href="#prydwen-flat" width="440" height="245"/></svg>Brotherhood of Steel</span>' + c;
+    if (p.bos) c = '<span class="chip bos"><svg class="bosi" viewBox="0 0 100 100" aria-hidden="true"><use href="#bos-flat"/></svg>Brotherhood of Steel</span>' + c;
     return c;
   }
   function showPlace(p) {

@@ -17,7 +17,7 @@ export function placeLabels({ vb, u, off, fw, fh, locs, unm, sel, show }) {
   if (show.unm) unm.forEach(l => { if (inView(l)) add(dotBox(l), l); });
   const items = [];
   locs.forEach(l => { if (!visible(l) || l.lab.style.display === 'none') return;
-    items.push({ p: l, el: l.lab, fs: l.key ? 11.5 : 10, o: l.mm && show.mm ? u * 13 : off, fixed: l.stacked || !!l.icon,
+    items.push({ p: l, el: l.lab, fs: l.key ? 11.5 : 10, o: l.mm && show.mm ? u * 13 : l.bos ? u * 13 : off, fixed: l.stacked || !!l.icon,
       pri: l === sel ? 0 : l.stacked || l.icon ? 1 : l.mm ? 2 : l.key || l.bos ? 3 : 5 }); });
   if (show.unm) unm.forEach(l => { if (!inView(l) || l.lab.style.display === 'none') return;
     items.push({ p: l, el: l.lab, fs: 9.5, o: off * .8, fixed: false, pri: l === sel ? 0 : 6 }); });

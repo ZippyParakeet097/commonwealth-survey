@@ -5,6 +5,8 @@ export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': 
 export const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
 // a filled SVG path as markup, or nothing when the layer is empty
 export const P = (d, fill, extra = '') => d ? `<path d="${d}" fill="${fill}" fill-rule="evenodd" ${extra}/>` : '';
+// a short message for screen readers, read out once by the map's polite live region
+export const announce = msg => { const s = $('map-status'); if (!s) return; s.textContent = ''; requestAnimationFrame(() => { s.textContent = msg; }); };
 export const on = k => { const c = $('L-' + k); return !!(c && c.checked); };
 
 // per-viewer preferences; storage may be missing or blocked, and the page works without it

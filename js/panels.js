@@ -1,20 +1,21 @@
 import { km, compass, fmtDist, fmtArea, fmtWalk, toUnit, units, KM_PER_MI } from './geo.js';
-import { $, esc } from './util.js';
+import { $, esc, announce } from './util.js';
 import { SEARCH } from './measure.js';
 
 // shoelace area of every ring in an M/L/Z path, in square sheet units
 const pathArea = d => d.match(/M[^M]+/g).reduce((sum, s) => { const n = s.match(/-?\d+\.?\d*/g).map(Number); let a = 0;
   for (let i = 0, k = n.length / 2; i < k; i++) { const j = (i + 1) % k; a += n[2 * i] * n[2 * j + 1] - n[2 * j] * n[2 * i + 1]; } return sum + Math.abs(a) / 2; }, 0);
 
-export function createPanels({ map, card, measure, byId, D }) {
+export function createPanels({ map, card, measure, byId, D, showMap }) {
   const at = n => byId.get(n), sanct = at('Sanctuary Hills'), dc = at('Diamond City'), castle = at('The Castle');
-  const go = p => { card.select(p, true); map.wrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+  // "show on map" from another tab: switch to the map, then select, so the map has its size to fit to
+  const go = p => { showMap(); card.select(p, true); announce(`Selected ${p.n}${p.town ? ', ' + p.town : ''}.`); };
   const route = SEARCH.map(([n, q]) => ({ p: at(n), q })).filter(s => s.p);
   const showRoute = () => {
-    measure.route(route.map(s => s.p), "The Sole Survivor's search");
+    showMap();
     const xs = route.map(s => s.p.x), ys = route.map(s => s.p.y);
     map.fit(Math.min(...xs) - 3, Math.min(...ys) - 3, Math.max(...xs) + 3, Math.max(...ys) + 3);
-    map.wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    measure.route(route.map(s => s.p), "The Sole Survivor's search");
   };
   // the two marked places farthest apart: the longest straight trip the game map allows
   let far = [null, null, 0];
@@ -25,12 +26,12 @@ export function createPanels({ map, card, measure, byId, D }) {
     // the Sole Survivor's search
     let sum = 0;
     $('routet').tBodies[0].innerHTML = route.map((s, i) => { const leg = i ? km(route[i - 1].p, s.p) : 0; sum += leg;
-      return `<tr data-go="${esc(s.p.id)}"><td>${i + 1}. ${esc(s.p.label)}</td><td class="q">${esc(s.q)}</td><td class="n">${i ? fmtDist(leg) : '—'}</td><td class="n">${i ? fmtDist(sum) : '—'}</td></tr>`; }).join('');
+      return `<tr data-go="${esc(s.p.id)}"><td><button class="rowbtn" data-go="${esc(s.p.id)}">${i + 1}. ${esc(s.p.label)}</button></td><td class="q">${esc(s.q)}</td><td class="n">${i ? fmtDist(leg) : '—'}</td><td class="n">${i ? fmtDist(sum) : '—'}</td></tr>`; }).join('');
     $('rt-total').textContent = fmtDist(sum); $('rt-walk').textContent = fmtWalk(sum); $('rt-legs').textContent = route.length - 1;
     $('rt-tp').textContent = fmtDist(km(at('Greenetech Genetics'), at('The Institute')), 2);
 
     // workshop settlements
-    $('mmt').tBodies[0].innerHTML = [...map.mmList].sort((a, b) => km(sanct, a) - km(sanct, b)).map(p => `<tr data-go="${esc(p.id)}"><td><svg class="mmi" viewBox="0 0 556 359" aria-hidden="true"><use href="#mm-flag"/></svg>${esc(p.label)}</td><td>${esc(p.town)}</td><td class="n">${p === sanct ? '—' : fmtDist(km(sanct, p))}</td><td>${p === sanct ? '' : compass(sanct, p)}</td><td>${esc(p.mm)}</td></tr>`).join('');
+    $('mmt').tBodies[0].innerHTML = [...map.mmList].sort((a, b) => km(sanct, a) - km(sanct, b)).map(p => `<tr data-go="${esc(p.id)}"><td><button class="rowbtn" data-go="${esc(p.id)}"><svg class="mmi" viewBox="0 0 556 359" aria-hidden="true"><use href="#mm-flag"/></svg>${esc(p.label)}</button></td><td>${esc(p.town)}</td><td class="n">${p === sanct ? '—' : fmtDist(km(sanct, p))}</td><td>${p === sanct ? '' : compass(sanct, p)}</td><td>${esc(p.mm)}</td></tr>`).join('');
 
     // site-plan facts
     const F = D.plans, hang = at("Hangman's Alley");
@@ -67,7 +68,7 @@ export function createPanels({ map, card, measure, byId, D }) {
     $('gs-a').textContent = `${G.zone_sqmi} sq mi`; $('gs-tr').textContent = `${G.lo_sqmi}, ${G.theory_sqmi} or ${G.hi_sqmi} sq mi`; $('gs-t').textContent = `≈${G.theory_sqmi} sq mi`;
     const townLi = ts => ts.map(t => `<li>${esc(t.n)}<span>${t.share}%</span></li>`).join('');
     $('gs-tz').innerHTML = townLi(G.towns_zone); $('gs-tb').innerHTML = townLi(G.towns_beyond);
-    $('gs-go').onclick = () => { if (!$('L-gs').checked) $('L-gs').click(); map.VIEWS.gs(); card.select(at('Crater of Atom')); map.wrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+    $('gs-go').onclick = () => { showMap(); if (!$('L-gs').checked) $('L-gs').click(); map.VIEWS.gs(); card.select(at('Crater of Atom')); announce('Showing the Glowing Sea. Selected the Crater of Atom.'); };
   }
 
   for (const id of ['routet', 'mmt']) $(id).addEventListener('click', e => { const tr = e.target.closest('tr[data-go]'); if (tr) go(byId.get(tr.dataset.go)); });

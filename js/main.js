@@ -1,12 +1,13 @@
 import { units, project, unproject, fmtLatLon } from './geo.js';
 import { $, on, prefs } from './util.js';
-import { loadData, buildPlaces } from './data.js';
+import { loadData, buildPlaces, buildNukaWorld } from './data.js';
 import { createMap } from './map.js';
 import { createGrid } from './grid.js';
 import { createMeasure } from './measure.js';
 import { createCard } from './card.js';
 import { createPanels } from './panels.js';
 import { makePlans } from './plans.js';
+import { createRegion } from './region.js';
 
 async function main() {
   let D;
@@ -18,13 +19,15 @@ async function main() {
   }
   units.unit = prefs.get('unit', 'mi') === 'km' ? 'km' : 'mi';
   const places = buildPlaces(D.csv);
-  const byId = new Map(places.map(p => [p.id, p]));
-  const map = createMap({ D, places, byId });
+  const nw = buildNukaWorld(D.nw);  // off the sheet, so kept out of the place lists and tables
+  const byId = new Map([...places, nw].map(p => [p.id, p]));
+  const map = createMap({ D, places, byId, nw });
   // the grid covers the game map and the theorized Glowing Sea south and west of it
   const g = map.gameBox, s = D.gs.zone.box;
   const grid = createGrid(map, [Math.min(g[0], s[0]), Math.min(g[1], s[1]), Math.max(g[2], s[2]), Math.max(g[3], s[3])]);
   const measure = createMeasure(map);
   const card = createCard({ map, grid, byId, D });
+  createRegion({ D, nw, tc: byId.get('Nuka-World transit center') });
   const plans = makePlans(D.plans, byId);
   const panels = createPanels({ map, card, measure, byId, D });
 
@@ -40,7 +43,7 @@ async function main() {
 
   // find a place
   const dl = $('places');
-  [...places].sort((a, b) => (a.kind === 'unm') - (b.kind === 'unm') || a.id.localeCompare(b.id)).forEach(p => { const o = document.createElement('option'); o.value = p.id; if (p.kind === 'unm') o.label = 'unmarked'; dl.appendChild(o); });
+  [...places, nw].sort((a, b) => (a.kind === 'unm') - (b.kind === 'unm') || a.id.localeCompare(b.id)).forEach(p => { const o = document.createElement('option'); o.value = p.id; if (p.kind === 'unm') o.label = 'unmarked'; dl.appendChild(o); });
   $('q').addEventListener('change', e => { const p = byId.get(e.target.value.trim()); if (p) { reveal(p); card.select(p, true); } });
   document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => map.VIEWS[b.dataset.view]());
 

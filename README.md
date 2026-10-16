@@ -12,7 +12,8 @@ The game squeezes Boston and its suburbs into a few square miles. This tool puts
 - **Every location.** 258 marked map locations and 151 unmarked ones, each with its real latitude and longitude, real town, the real site it stands on where there is one, and how its position was worked out.
 - **Real coordinates anywhere.** Hover for latitude, longitude and grid square; click empty ground to drop a pin with links to OpenStreetMap and Google Maps.
 - **The Glowing Sea.** The in-game Sea warped onto real ground, plus a theory of how far it runs past the map's edge, worked out from fallout drift, October winds and real terrain. Both nuclear craters are drawn at their estimated true size.
-- **Site plans** of Diamond City, the Castle, Fort Strong and Hangman's Alley, drawn from OpenStreetMap at true scale.
+- **Nuka-World, theorized.** The park is off the game map, so it gets its own figure: southern New England with the survey sheet, the game map and the fan-favoured site, Six Flags New England in Agawam, about 66 miles west-southwest of the transit center. The fastest real drive there, 82 miles by the Mass Pike, is drawn on it. The figure and the place card give the reasoning and sources.
+- **Places on real ground:** site plans of Diamond City, the Castle, Fort Strong and Hangman's Alley, drawn from OpenStreetMap at true scale.
 - Miles or kilometres, light or dark (follows your system), and links that open on a place: `…/#place=Diamond%20City`.
 
 ## Run it
@@ -35,7 +36,8 @@ Everything the map shows is in [`data/`](data/), ready for QGIS, Google Earth, a
 |---|---|
 | [`locations.csv`](data/locations.csv) | Every game location with real `lat`/`lon` (WGS 84). One row per place. |
 | [`glowing-sea.geojson`](data/glowing-sea.geojson) | The Glowing Sea (in-game and theorized), and both craters with their estimated yields. |
-| `basemap.json`, `sites.json`, `plans.json`, `glowing-sea.json` | The map's own drawing data, as SVG paths in sheet kilometres (see below). |
+| [`nuka-world.geojson`](data/nuka-world.geojson) | Nuka-World's theorized site, with the reasoning, and the fastest real drive to it from the transit center (82 mi, by the Mass Pike). |
+| `basemap.json`, `sites.json`, `plans.json`, `glowing-sea.json`, `region.json` | The map's own drawing data, as SVG paths in sheet kilometres (see below). |
 
 ### `locations.csv` columns
 
@@ -86,6 +88,8 @@ The code is plain JavaScript modules in `js/` with no build step: `map.js` draws
 
 - Town boundaries and hydrography: [MassGIS](https://www.mass.gov/orgs/massgis-bureau-of-geographic-information) (1:25,000).
 - Landmark positions, real site outlines and site plans: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors. The data derived from OpenStreetMap (`data/sites.json`, `data/plans.json`) is available under the [Open Database License](https://opendatacommons.org/licenses/odbl/).
+- Road route to Nuka-World: [OSRM](https://project-osrm.org/) on OpenStreetMap roads.
+- Nuka-World figure: coastline from [Natural Earth](https://www.naturalearthdata.com/) (public domain) and US state boundaries from the US Census Bureau, both via the [world-atlas](https://github.com/topojson/world-atlas) and [us-atlas](https://github.com/topojson/us-atlas) packages.
 - Terrain: AWS Terrain Tiles (USGS elevation). Winds: Iowa Environmental Mesonet. Crater scaling: Glasstone & Dolan, *The Effects of Nuclear Weapons*.
 - Game locations: the game's own location table on the 2048 map grid.
 

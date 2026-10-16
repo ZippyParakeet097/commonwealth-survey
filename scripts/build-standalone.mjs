@@ -43,7 +43,8 @@ for (const [from, dep, id] of imported) if (!exported[dep].includes(id)) throw n
 
 const data = {
   base: JSON.parse(await read('data/basemap.json')), sites: JSON.parse(await read('data/sites.json')),
-  plans: JSON.parse(await read('data/plans.json')), gs: JSON.parse(await read('data/glowing-sea.json')), csv: await read('data/locations.csv'),
+  plans: JSON.parse(await read('data/plans.json')), gs: JSON.parse(await read('data/glowing-sea.json')),
+  nw: JSON.parse(await read('data/nuka-world.geojson')), region: JSON.parse(await read('data/region.json')), csv: await read('data/locations.csv'),
 };
 const css = await read('css/survey.css');
 let html = await read('index.html');

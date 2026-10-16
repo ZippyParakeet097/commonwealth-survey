@@ -6,6 +6,7 @@ import { project } from '../js/geo.js';
 const root = new URL('..', import.meta.url);
 const rows = parseCSV(await readFile(new URL('data/locations.csv', root), 'utf8'));
 const base = JSON.parse(await readFile(new URL('data/basemap.json', root), 'utf8'));
+const nuka = JSON.parse(await readFile(new URL('data/nuka-world.geojson', root), 'utf8'));
 const COLUMNS = ['name', 'label', 'type', 'marked', 'key', 'workshop', 'faction', 'game_x', 'game_y', 'lat', 'lon', 'position', 'real_counterpart', 'town', 'glowing_sea', 'note'];
 const ENUM = {
   marked: ['yes', 'no'], key: ['0', '1', '2'], glowing_sea: ['yes', ''],
@@ -14,7 +15,7 @@ const ENUM = {
 };
 // places the page refers to by name (route, hubs, site plans, Glowing Sea panel)
 const REQUIRED = ['Sanctuary Hills', 'Diamond City', 'The Castle', 'Vault 111', 'Red Rocket truck stop', 'Museum of Freedom', 'Park Street station', 'Fort Hagen',
-  'Goodneighbor', 'Rocky cave', 'Greenetech Genetics', 'The Institute', "Hangman's Alley", 'C.I.T. ruins', 'Fort Strong', 'Crater of Atom', 'Abernathy farm', 'The Prydwen'];
+  'Goodneighbor', 'Rocky cave', 'Nuka-World transit center', 'Greenetech Genetics', 'The Institute', "Hangman's Alley", 'C.I.T. ruins', 'Fort Strong', 'Crater of Atom', 'Abernathy farm', 'The Prydwen'];
 
 const errors = [];
 const missingCols = COLUMNS.filter(c => !(c in (rows[0] || {})));
@@ -31,6 +32,12 @@ rows.forEach((r, i) => {
 });
 const marked = new Set(rows.filter(r => r.marked === 'yes').map(r => r.name));
 for (const n of REQUIRED) if (!marked.has(n)) errors.push(`required place missing or unmarked: ${n}`);
+// Nuka-World (data/nuka-world.geojson): one park point, and a road route from the transit center to it
+{ const pt = nuka.features.find(f => f.geometry.type === 'Point'), ln = nuka.features.find(f => f.geometry.type === 'LineString'), tc = rows.find(r => r.name === 'Nuka-World transit center');
+  if (!pt || !ln) errors.push('nuka-world.geojson: needs a Point (the park) and a LineString (the road route)');
+  else if (tc) { const same = ([lon, lat], la, lo) => Math.abs(lat - la) < 1e-5 && Math.abs(lon - lo) < 1e-5, c = ln.geometry.coordinates;
+    if (!same(c[0], +tc.lat, +tc.lon)) errors.push('nuka-world.geojson: the road route must start at the Nuka-World transit center in locations.csv');
+    if (!same(c[c.length - 1], pt.geometry.coordinates[1], pt.geometry.coordinates[0])) errors.push('nuka-world.geojson: the road route must end at the park'); } }
 const workshops = rows.filter(r => r.workshop).length;
 if (workshops !== 30) errors.push(`expected 30 workshop settlements, found ${workshops}`);
 

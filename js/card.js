@@ -6,7 +6,7 @@ const inside = (rs, x, y) => { let c = false; for (const r of rs) for (let i = 0
 const links = (lat, lon) => `<div class="links"><a href="https://www.openstreetmap.org/?mlat=${lat.toFixed(5)}&amp;mlon=${lon.toFixed(5)}#map=16/${lat.toFixed(5)}/${lon.toFixed(5)}" target="_blank" rel="noopener">OpenStreetMap ↗</a><a href="https://www.google.com/maps/search/?api=1&amp;query=${lat.toFixed(5)},${lon.toFixed(5)}" target="_blank" rel="noopener">Google Maps ↗</a></div>`;
 
 export function createCard({ map, grid, byId, D }) {
-  const sanct = byId.get('Sanctuary Hills'), dc = byId.get('Diamond City'), castle = byId.get('The Castle');
+  const tc = byId.get('Nuka-World transit center'), sanct = byId.get('Sanctuary Hills'), dc = byId.get('Diamond City'), castle = byId.get('The Castle');
   const A = D.gs.craters.atom, C = D.gs.craters.cam;
   const CRATER = { 'Crater of Atom': `Nuclear crater · ~${(A.kt / 1000).toFixed(0)} Mt`, 'Cambridge crater': `Nuclear crater · ~${C.kt} kt` };
   const gameArea = rings(D.base.footprint);
@@ -18,6 +18,7 @@ export function createCard({ map, grid, byId, D }) {
   const setHash = h => { try { history.replaceState(null, '', h ? '#' + h : location.pathname + location.search); } catch { /* sandboxed */ } };
 
   function chipsFor(p) {
+    if (p.kind === 'off') return '<span class="chip nw">Theorized location</span><span class="chip est">Off the sheet</span>';
     let c = p.kind === 'unm' ? '<span class="chip unm">Unmarked location</span>' : '';
     c += p.k === 2 ? '<span class="chip real">Shares a real site</span>'
       : p.k === 3 ? '<span class="chip real">Placed from game clues</span>'
@@ -32,8 +33,8 @@ export function createCard({ map, grid, byId, D }) {
   function showPlace(p) {
     $('info').innerHTML = `<h2>Selected</h2><p class="place-name">${esc(p.n)}</p><div class="chips">${chipsFor(p)}</div>${p.note ? `<p class="lore">${esc(p.note)}</p>` : ''}
      <dl class="kv">${p.real ? `<dt>Real site</dt><dd class="txt">${esc(p.real)}</dd>` : ''}${p.town ? `<dt>Real town</dt><dd class="txt">${esc(p.town)}</dd>` : ''}${p.t && p.t !== p.n && p.t !== 'Unmarked' ? `<dt>Game type</dt><dd class="txt">${esc(p.t)}</dd>` : ''}
-     <dt>Lat, lon</dt><dd>${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</dd>${gridRow(p)}${hubs(p)}</dl>
-     ${p.snap ? '<p class="small">The warp put this site in the sea. It was moved to the nearest shore.</p>' : ''}${links(p.lat, p.lon)}`;
+     <dt>Lat, lon</dt><dd>${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</dd>${gridRow(p)}${p.kind === 'off' ? `<dt>${esc(tc.n)}</dt><dd>${fmtDist(km(tc, p))} ${compass(tc, p)}</dd>` : ''}${hubs(p)}</dl>
+     ${p.snap ? '<p class="small">The warp put this site in the sea. It was moved to the nearest shore.</p>' : ''}${p.sources?.length ? `<p class="small">Sources: ${p.sources.map(([t, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`).join('; ')}.</p>` : ''}${links(p.lat, p.lon)}`;
   }
   function showPin(pt) {
     const [lat, lon] = unproject(pt.x, pt.y);

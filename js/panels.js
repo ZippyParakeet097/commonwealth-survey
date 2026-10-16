@@ -1,4 +1,4 @@
-import { km, compass, fmtDist, fmtArea, fmtWalk, toUnit, units } from './geo.js';
+import { km, compass, fmtDist, fmtArea, fmtWalk, toUnit, units, KM_PER_MI } from './geo.js';
 import { $, esc } from './util.js';
 import { SEARCH } from './measure.js';
 
@@ -38,6 +38,9 @@ export function createPanels({ map, card, measure, byId, D }) {
     $('castle-size').textContent = `${F.castle.fort_ft} ft`;
     $('hang-len').textContent = `${F.hang.len_ft} ft`; $('hang-dc').textContent = fmtDist(km(hang, dc), 2); $('hang-cit').textContent = fmtDist(km(hang, at('C.I.T. ruins')), 2);
     $('strong-dist').textContent = fmtDist(km(at('Fort Strong'), castle));
+    const nw = at('Nuka-World'), road = D.nw.features.find(f => f.geometry.type === 'LineString').properties;
+    $('nw-line').textContent = fmtDist(km(at('Nuka-World transit center'), nw), 0); $('nw-road').textContent = fmtDist(road.distance_mi * KM_PER_MI, 0);
+    $('nw-drive').textContent = `${Math.floor(road.drive_min / 60)} h ${road.drive_min % 60} min`;
 
     // scale notes
     const hagen = at('Fort Hagen'), atom = at('Crater of Atom'), v111 = at('Vault 111'), aber = at('Abernathy farm');
@@ -69,6 +72,7 @@ export function createPanels({ map, card, measure, byId, D }) {
 
   for (const id of ['routet', 'mmt']) $(id).addEventListener('click', e => { const tr = e.target.closest('tr[data-go]'); if (tr) go(byId.get(tr.dataset.go)); });
   $('route-go').onclick = $('m-search').onclick = showRoute;
+  $('nw-go').onclick = () => go(at('Nuka-World'));
   render();
   return { render };
 }

@@ -4,7 +4,7 @@
   --stream: #5d8799; --rule: #b9bdb1; --ink: #22282b; --muted: #5f676a;
   --loc: #24508f; --unm: #7d8588; --bos: #962e22; --bos-fill: rgba(150,46,34,.18); --fp: rgba(46,125,72,.07); --fpline: #2e7d48; --panel: #fbfbf8; --line: #cdd1c6;
   --gs: #9a6a00; --gs-fill: rgba(214,154,0,.24); --gs-hatch: rgba(176,120,0,.55); --site: rgba(36,80,143,.14); --grass: #a6c48c; --dirt: #c9a57a; --stand: #dcded6; --monster: #2d6a3a; --bldg: #e0e1da; --street: #c3c7bc;
-  --grid: rgba(34,40,43,.28); --meas: #b8325a;
+  --grid: rgba(34,40,43,.28); --meas: #b8325a; --nw: #6a3d9e;
   --f-ui: "Overpass", "Helvetica Neue", Arial, sans-serif;
   --f-mono: "Overpass Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --f-text: "Source Serif 4", Georgia, "Times New Roman", serif;
@@ -14,13 +14,13 @@
   --stream: #5f97ab; --rule: #3a4246; --ink: #e2e6e2; --muted: #9aa3a5;
   --loc: #8db0ec; --unm: #8a9497; --bos: #ea8a76; --bos-fill: rgba(234,138,118,.2); --fp: rgba(122,201,140,.08); --fpline: #7ac98c; --panel: #1a1f22; --line: #31393c;
   --gs: #e8bb4f; --gs-fill: rgba(232,180,60,.17); --gs-hatch: rgba(232,187,79,.5); --site: rgba(141,176,236,.16); --grass: #3e5c35; --dirt: #7b6146; --stand: #2b3235; --monster: #6fbf7c; --bldg: #2a3134; --street: #3d4649;
-  --grid: rgba(226,230,226,.22); --meas: #f07ba0; color-scheme: dark } }
+  --grid: rgba(226,230,226,.22); --meas: #f07ba0; --nw: #bfa2f0; color-scheme: dark } }
 :root[data-theme="dark"] {
   --paper: #121618; --land: #1f2528; --sea: #0d171c; --water: #16303b; --wet: #26301f;
   --stream: #5f97ab; --rule: #3a4246; --ink: #e2e6e2; --muted: #9aa3a5;
   --loc: #8db0ec; --unm: #8a9497; --bos: #ea8a76; --bos-fill: rgba(234,138,118,.2); --fp: rgba(122,201,140,.08); --fpline: #7ac98c; --panel: #1a1f22; --line: #31393c;
   --gs: #e8bb4f; --gs-fill: rgba(232,180,60,.17); --gs-hatch: rgba(232,187,79,.5); --site: rgba(141,176,236,.16); --grass: #3e5c35; --dirt: #7b6146; --stand: #2b3235; --monster: #6fbf7c; --bldg: #2a3134; --street: #3d4649;
-  --grid: rgba(226,230,226,.22); --meas: #f07ba0; color-scheme: dark }
+  --grid: rgba(226,230,226,.22); --meas: #f07ba0; --nw: #bfa2f0; color-scheme: dark }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--f-ui); font-size: 15px; line-height: 1.5;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px; }
 a { color: var(--loc); }
@@ -55,6 +55,9 @@ svg text { font-family: var(--f-ui); paint-order: stroke; stroke: var(--land); s
 .t-plan.mon { fill: var(--monster); font-weight: 800; }
 .t-plan.loc { fill: var(--loc); }
 .t-plan.bos { fill: var(--bos); }
+.t-plan.nw { fill: var(--nw); font-weight: 800; }
+.t-plan.fp { fill: var(--fpline); }
+.t-region { fill: var(--muted); font-size: calc(var(--u) * 11px); font-weight: 600; letter-spacing: .14em; }
 .t-loc.bos, .t-minor.bos { fill: var(--bos); }
 svg.hide-bos .bos { display: none; }
 .prysw { width: 22px; height: 12px; flex: none; color: var(--bos); }
@@ -88,7 +91,7 @@ aside { display: grid; gap: 14px; min-width: 0; }
 .place-name { font-size: 1.25rem; font-weight: 800; line-height: 1.15; margin: 0; text-wrap: balance; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { display: inline-block; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; padding: 2px 7px; border: 1px solid currentColor; border-radius: 2px; }
-.chip.real { color: var(--ink); } .chip.est { color: var(--muted); border-style: dashed; } .chip.warn { color: var(--bos); border-style: dashed; } .chip.bos { color: var(--bos); } .chip.gs { color: var(--gs); } .chip.mm { color: var(--loc); } .chip.unm { color: var(--unm); }
+.chip.real { color: var(--ink); } .chip.est { color: var(--muted); border-style: dashed; } .chip.warn { color: var(--bos); border-style: dashed; } .chip.bos { color: var(--bos); } .chip.gs { color: var(--gs); } .chip.mm { color: var(--loc); } .chip.unm { color: var(--unm); } .chip.nw { color: var(--nw); border-style: dashed; }
 .lore { font-family: var(--f-text); font-size: .95rem; margin: 0; }
 .small { font-size: .8rem; color: var(--muted); margin: 0; }
 dl.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 12px; margin: 0; font-size: .85rem; }

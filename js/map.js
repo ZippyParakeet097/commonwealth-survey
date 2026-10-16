@@ -11,7 +11,7 @@ const MIN_W = 0.45;  // closest zoom, in sheet km across
 const pathBox = d => { const n = d.match(/-?\d+\.?\d*/g).map(Number), xs = n.filter((_, i) => !(i % 2)), ys = n.filter((_, i) => i % 2);
   return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; };
 
-export function createMap({ D, places, byId }) {
+export function createMap({ D, places, byId, nw }) {
   const svg = $('map'), wrap = $('mapwrap');
   const B = D.base, G = D.gs.zone, CR = D.gs.craters;
   const locs = places.filter(p => p.kind === 'loc'), unm = places.filter(p => p.kind === 'unm');
@@ -67,6 +67,7 @@ export function createMap({ D, places, byId }) {
   mmList.forEach(l => { l.flag = mk('use', { href: '#mm-flag' }, $('g-mm')); l.fr = mk('rect', { fill: 'none', stroke: 'var(--land)', 'stroke-width': 1.5, 'vector-effect': 'non-scaling-stroke' }, $('g-mm')); });
   const gsT = ['The Glowing Sea', 'theorized, beyond the map edge', 'fallout drift, NE wind', 'outer limit, if the hills had not held it']
     .map((s, i) => { const t = mk('text', { class: ['t-gs', 't-gs sub', 't-gs r', 't-gs sub'][i], 'text-anchor': 'middle' }, $('gs-labels')); t.textContent = s; return t; });
+  const tc = byId.get('Nuka-World transit center');
   const sel = mk('circle', { fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke', r: 0 }, $('g-sel'));
   const pinMark = mk('path', { fill: 'var(--ink)', stroke: 'var(--land)', 'stroke-width': 1.5, 'vector-effect': 'non-scaling-stroke' }, $('g-sel'));
 
@@ -145,7 +146,7 @@ export function createMap({ D, places, byId }) {
       if (busy([b.x, b.y, b.x + b.width, b.y + b.height], null)) t.style.display = 'none'; };
     for (const t of $('g-town').children) yieldTo(t);
     for (const t of $('g-river').children) { t.style.display = ''; yieldTo(t); }
-    if (api.sel) { sel.setAttribute('cx', api.sel.x); sel.setAttribute('cy', api.sel.y); sel.setAttribute('r', u * 10); } else sel.setAttribute('r', 0);
+    if (api.sel && api.sel.kind !== 'off') { sel.setAttribute('cx', api.sel.x); sel.setAttribute('cy', api.sel.y); sel.setAttribute('r', u * 10); } else sel.setAttribute('r', 0);
     pinMark.setAttribute('d', pin ? `M${pin.x} ${pin.y}l${-u * 6} ${-u * 13}a${u * 6} ${u * 6} 0 1 1 ${u * 12} 0z` : '');
     scaleBar(u);
     hooks.render.forEach(f => f(u, z));
@@ -228,7 +229,8 @@ export function createMap({ D, places, byId }) {
     get vb() { return vb; }, get u() { return vb.w / (svg.clientWidth || 800); },
     fit, fitBox, render, zoomAt,
     setPin(p) { pin = p; render(); },
-    focus(p) { fit(p.x - 7, p.y - 5, p.x + 7, p.y + 5); },
+    // Nuka-World is off the sheet (its figure below shows where), so the map goes to its transit center instead
+    focus(p) { if (p === nw) p = tc; fit(p.x - 7, p.y - 5, p.x + 7, p.y + 5); },
   };
   return api;
 }

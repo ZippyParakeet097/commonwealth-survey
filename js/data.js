@@ -1,6 +1,6 @@
 import { project } from './geo.js';
 
-const FILES = { base: 'basemap.json', sites: 'sites.json', plans: 'plans.json', gs: 'glowing-sea.json', csv: 'locations.csv' };
+const FILES = { base: 'basemap.json', sites: 'sites.json', plans: 'plans.json', gs: 'glowing-sea.json', nw: 'nuka-world.geojson', region: 'region.json', csv: 'locations.csv' };
 
 // The standalone build inlines every data file as window.__SURVEY_DATA__; the site fetches them.
 export async function loadData() {
@@ -53,4 +53,11 @@ export function buildPlaces(csvText) {
       real: r.real_counterpart, town: r.town, gs: r.glowing_sea === 'yes', note: r.note, gx: +r.game_x, gy: +r.game_y,
     };
   });
+}
+
+// Nuka-World, from data/nuka-world.geojson: a theorized site far off the sheet, shaped like a place record
+export function buildNukaWorld(gj) {
+  const f = gj.features.find(f => f.geometry.type === 'Point'), p = f.properties, [lon, lat] = f.geometry.coordinates;
+  return { id: p.name, n: p.name, label: p.name, t: '', kind: 'off', key: 2, lat, lon, ...project(lat, lon),
+    real: p.real_counterpart, town: p.town, note: p.note, sources: p.sources || [] };
 }
